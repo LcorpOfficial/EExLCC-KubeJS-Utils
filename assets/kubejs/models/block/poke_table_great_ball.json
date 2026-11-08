@@ -1,0 +1,877 @@
+{
+  "format_version": "1.9.0",
+  "credit": "Made with Blockbench",
+  "texture_size": [
+    32,
+    32
+  ],
+  "textures": {
+    "0": "kubejs:block/ball_table_heads",
+    "1": "create:block/palettes/stone_types/alternatives/andesite_cut_indented",
+    "2": "create:block/palettes/stone_types/alternatives/andesite_cut_bond",
+    "particle": "kubejs:block/ball_table_heads"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            14,
+            16,
+            16
+          ],
+          "texture": "#1"
+        },
+        "east": {
+          "uv": [
+            0,
+            14,
+            8,
+            16
+          ],
+          "texture": "#1"
+        },
+        "south": {
+          "uv": [
+            8,
+            14,
+            0,
+            16
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            16,
+            14,
+            8,
+            16
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            12,
+            4,
+            4,
+            12
+          ],
+          "texture": "#1",
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            12,
+            4,
+            4,
+            12
+          ],
+          "texture": "#1"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        1,
+        6
+      ],
+      "to": [
+        10,
+        13,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            16,
+            4,
+            4
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            4,
+            16,
+            0,
+            4
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            16,
+            4,
+            4
+          ],
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            4,
+            16,
+            0,
+            4
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_0",
+      "from": [
+        6,
+        13,
+        0
+      ],
+      "to": [
+        10,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            13,
+            0,
+            11,
+            0.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            12.5,
+            0,
+            13,
+            8
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            11,
+            7.5,
+            13,
+            8
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            11,
+            0,
+            11.5,
+            8
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            11,
+            0,
+            13,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            11,
+            8,
+            13,
+            0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_2",
+      "from": [
+        3,
+        13,
+        1
+      ],
+      "to": [
+        6,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            0.5,
+            9.5,
+            1
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            10.5,
+            0.5,
+            11,
+            7.5
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            9.5,
+            7,
+            11,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            9.5,
+            0.5,
+            10,
+            7.5
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            9.5,
+            0.5,
+            11,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            9.5,
+            7.5,
+            11,
+            0.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_3",
+      "from": [
+        10,
+        13,
+        1
+      ],
+      "to": [
+        13,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            14.5,
+            0.5,
+            13,
+            1
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            14,
+            0.5,
+            14.5,
+            7.5
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            13,
+            7,
+            14.5,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            13,
+            0.5,
+            13.5,
+            7.5
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            13,
+            0.5,
+            14.5,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            13,
+            7.5,
+            14.5,
+            0.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_6",
+      "from": [
+        2,
+        13,
+        2
+      ],
+      "to": [
+        3,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.5,
+            1,
+            9,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            9,
+            1,
+            9.5,
+            7
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            9,
+            6.5,
+            9.5,
+            7
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            9,
+            1,
+            9.5,
+            7
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            9,
+            1,
+            9.5,
+            7
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            9,
+            7,
+            9.5,
+            1
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_7",
+      "from": [
+        13,
+        13,
+        2
+      ],
+      "to": [
+        14,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15,
+            1,
+            14.5,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            14.5,
+            1,
+            15,
+            7
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            14.5,
+            6.5,
+            15,
+            7
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            14.5,
+            1,
+            15,
+            7
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            14.5,
+            1,
+            15,
+            7
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            14.5,
+            7,
+            15,
+            1
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_10",
+      "from": [
+        1,
+        13,
+        3
+      ],
+      "to": [
+        2,
+        16,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            1.5,
+            8.5,
+            2
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8.5,
+            1.5,
+            9,
+            6.5
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            8.5,
+            6,
+            9,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8.5,
+            1.5,
+            9,
+            6.5
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            8.5,
+            1.5,
+            9,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8.5,
+            6.5,
+            9,
+            1.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_11",
+      "from": [
+        14,
+        13,
+        3
+      ],
+      "to": [
+        15,
+        16,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15.5,
+            1.5,
+            15,
+            2
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            15,
+            1.5,
+            15.5,
+            6.5
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            15,
+            6,
+            15.5,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            15,
+            1.5,
+            15.5,
+            6.5
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            15,
+            1.5,
+            15.5,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            6.5,
+            15.5,
+            1.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_14",
+      "from": [
+        0,
+        13,
+        5
+      ],
+      "to": [
+        1,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8.5,
+            2.5,
+            8,
+            3
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            2.5,
+            8.5,
+            5.5
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            8,
+            5,
+            8.5,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            2.5,
+            8.5,
+            5.5
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            8,
+            2.5,
+            8.5,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            5.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ball_table_heads_15",
+      "from": [
+        15,
+        13,
+        5
+      ],
+      "to": [
+        16,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            2.5,
+            15.5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            15.5,
+            2.5,
+            16,
+            5.5
+          ],
+          "texture": "#0",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            15.5,
+            5,
+            16,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            15.5,
+            2.5,
+            16,
+            5.5
+          ],
+          "texture": "#0",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            15.5,
+            2.5,
+            16,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15.5,
+            5.5,
+            16,
+            2.5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        37,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        37,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "gui": {
+      "rotation": [
+        26.62,
+        -42.81,
+        0
+      ],
+      "translation": [
+        0.25,
+        -1,
+        0
+      ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ]
+    },
+    "fixed": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "on_shelf": {
+      "rotation": [
+        0,
+        -180,
+        0
+      ]
+    }
+  }
+}

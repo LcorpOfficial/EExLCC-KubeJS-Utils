@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "kubejs:block/trophy_tournament" },
+    "facing=east":  { "model": "kubejs:block/trophy_tournament", "y": 90 },
+    "facing=south": { "model": "kubejs:block/trophy_tournament", "y": 180 },
+    "facing=west":  { "model": "kubejs:block/trophy_tournament", "y": 270 }
+  }
+}

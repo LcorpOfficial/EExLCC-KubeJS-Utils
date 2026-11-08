@@ -1,0 +1,11 @@
+# Generated logs, exports, and sync state
+*.log
+/.kubejs_sync/
+/exported/
+/startup_scripts/_synced/
+/server_scripts/_synced/
+/client_scripts/_synced/
+
+# Instance-specific sync settings and web server credentials
+/config/kubejs_sync.json
+/config/web_server.json

@@ -1,0 +1,7 @@
+{
+  "parent": "kubejs:block/apricorn_dense",
+  "textures": {
+    "all": "kubejs:block/apricorn_dense/white",
+    "particle": "kubejs:block/apricorn_dense/white"
+  }
+}

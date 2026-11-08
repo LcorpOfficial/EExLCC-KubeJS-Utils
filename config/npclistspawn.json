@@ -1,0 +1,57 @@
+{
+  "lists": {
+    "test": [
+      "cobblemon:battler_test",
+      "cobblemon:adminity",
+      "cobblemon:chara",
+      "cobblemon:captain_nautilus",
+      "cobblemon:cynthia",
+      "cobblemon:kenji",
+      "cobblemon:lasercraft",
+      "cobblemon:lcorpofficial_shimmer",
+      "cobblemon:pandam",
+      "cobblemon:preset_teams_test",
+      "cobblemon:saucecoie",
+      "cobblemon:saucymons",
+      "cobblemon:teali",
+      "cobblemon:timo",
+      "cobblemon:zul"
+    ],
+    "wild": [
+      "cobblemon:baker",
+      "cobblemon:bird_keeper",
+      "cobblemon:black_belt",
+      "cobblemon:bug_catcher",
+      "cobblemon:cafe_master",
+      "cobblemon:collector",
+      "cobblemon:construct",
+      "cobblemon:dragon_tamer",
+      "cobblemon:elf",
+      "cobblemon:endfarer",
+      "cobblemon:engineer",
+      "cobblemon:firebreather",
+      "cobblemon:fisherman",
+      "cobblemon:gardener",
+      "cobblemon:hiker",
+      "cobblemon:miner",
+      "cobblemon:nether_daemon",
+      "cobblemon:pkmn_breeder",
+      "cobblemon:poke_maniac",
+      "cobblemon:psychic",
+      "cobblemon:ranger_cold",
+      "cobblemon:ranger_craggy",
+      "cobblemon:ranger_warm",
+      "cobblemon:sky_trainer",
+      "cobblemon:super_nerd",
+      "cobblemon:sus_trainer",
+      "cobblemon:swimmer",
+      "cobblemon:tourist",
+      "cobblemon:veteran",
+      "cobblemon:void_walker",
+      "cobblemon:youngster"
+    ],
+    "boss": [
+      "cobblemon:cynthia_boss"
+    ]
+  }
+}

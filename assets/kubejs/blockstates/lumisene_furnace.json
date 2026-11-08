@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "kubejs:block/lumisene_furnace"
+    },
+    "facing=east": {
+      "model": "kubejs:block/lumisene_furnace",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "kubejs:block/lumisene_furnace",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "kubejs:block/lumisene_furnace",
+      "y": 270
+    }
+  }
+}

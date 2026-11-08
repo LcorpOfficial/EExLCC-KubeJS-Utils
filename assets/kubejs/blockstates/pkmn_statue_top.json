@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "kubejs:block/empty" },
+    "facing=east":  { "model": "kubejs:block/empty" },
+    "facing=south": { "model": "kubejs:block/empty" },
+    "facing=west":  { "model": "kubejs:block/empty" }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "kubejs:block/poke_table_master_ball" },
+    "facing=east": { "model": "kubejs:block/poke_table_master_ball", "y": 90 },
+    "facing=south": { "model": "kubejs:block/poke_table_master_ball", "y": 180 },
+    "facing=west": { "model": "kubejs:block/poke_table_master_ball", "y": 270 }
+  }
+}
