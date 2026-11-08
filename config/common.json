@@ -11,6 +11,6 @@
   "startup_error_report_url": "",
   "remove_slot_limit": false,
   "default_max_stack_size": 0,
-  "creative_mode_tab_icon": {"item": "kubejs:pkmn_statue"},
+  "creative_mode_tab_icon": {"id": "kubejs:pkmn_statue"},
   "creative_mode_tab_name": "LCC Core"
 }
