@@ -45,7 +45,9 @@ const text = value => ({
 const components = { CUSTOM_DATA: 'custom', BLOCK_ENTITY_DATA: 'block', LORE: 'lore' }
 function component(tag) { return { copyTag: () => tag.copy() } }
 function actor(name) {
-  return { getGameProfile: () => ({ getName: () => name }), getUUID: () => name + '-uuid' }
+  // KubeJS does not expose Entity#getUUID under that Java method name. Use the
+  // actual GameProfile API, and do not mock an unsupported player getter.
+  return { getGameProfile: () => ({ getName: () => name, getId: () => name + '-uuid' }) }
 }
 
 function environment(jade = true) {

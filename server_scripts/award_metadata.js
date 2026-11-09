@@ -90,10 +90,14 @@ function lccAwardApplyItem(stack, record) {
 
 global.lccAwards.stamp = (stack, grantor, recipient) => {
   const record = new $AwardTag()
-  record.putString('grantedBy', String(grantor.getGameProfile().getName()))
-  record.putString('grantedByUuid', String(grantor.getUUID()))
-  record.putString('grantedTo', String(recipient.getGameProfile().getName()))
-  record.putString('grantedToUuid', String(recipient.getUUID()))
+  // Entity#getUUID is renamed by KubeJS's script API. GameProfile's identity
+  // getters are available directly and return the same player's UUID.
+  const grantorProfile = grantor.getGameProfile()
+  const recipientProfile = recipient.getGameProfile()
+  record.putString('grantedBy', String(grantorProfile.getName()))
+  record.putString('grantedByUuid', String(grantorProfile.getId()))
+  record.putString('grantedTo', String(recipientProfile.getName()))
+  record.putString('grantedToUuid', String(recipientProfile.getId()))
   return lccAwardApplyItem(stack, record)
 }
 
