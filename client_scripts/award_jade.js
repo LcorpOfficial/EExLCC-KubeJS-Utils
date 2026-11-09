@@ -8,14 +8,16 @@
   var AwardJadeRegistration = Java.loadClass('snownee.jade.impl.WailaClientRegistration')
   var AwardJadeCallback = Java.loadClass('snownee.jade.api.callback.JadeTooltipCollectedCallback')
   var AwardJadeBlockAccessor = Java.loadClass('snownee.jade.api.BlockAccessor')
-  var AwardJadeBlockEntity = Java.loadClass('dev.latvian.mods.kubejs.block.entity.KubeBlockEntity')
+  var AwardJadeRegistries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
 
   global.lccAwards.appendJade = (box, accessor) => {
     if (!(accessor instanceof AwardJadeBlockAccessor)) return
+    var trophyId = String(AwardJadeRegistries.BLOCK.getKey(accessor.getBlock()))
+    if (!global.lccAwards.trophies.some(id => String(id) === trophyId)) return
     var entity = accessor.getBlockEntity()
-    if (!(entity instanceof AwardJadeBlockEntity) ||
-        !global.lccAwards.trophies.includes(String(entity.getBlock().id))) return
-    var record = entity.data.getCompound(global.lccAwards.key)
+    if (entity == null) return
+    var saved = entity.saveWithoutMetadata(accessor.getLevel().registryAccess())
+    var record = saved.getCompound('data').getCompound(global.lccAwards.key)
     if (!record.contains('grantedBy', 8) || !record.contains('grantedTo', 8)) return
 
     var tooltip = box.getTooltip()
@@ -25,7 +27,9 @@
 
   if (!global.lccAwards.jadeRegistered) {
     var registration = AwardJadeRegistration.instance()
-    registration.addTooltipCollectedCallback(0, new JavaAdapter(AwardJadeCallback, {
+    // Register directly in the active collection: Jade may otherwise queue this
+    // in a registration session after the script has already sorted the list.
+    registration.tooltipCollectedCallback.add(0, new JavaAdapter(AwardJadeCallback, {
       onTooltipCollected: function (box, accessor) {
         global.lccAwards.appendJade(box, accessor)
       }

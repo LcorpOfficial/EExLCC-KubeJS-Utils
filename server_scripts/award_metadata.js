@@ -3,9 +3,18 @@ const $AwardCustomData = Java.loadClass('net.minecraft.world.item.component.Cust
 const $AwardTag = Java.loadClass('net.minecraft.nbt.CompoundTag')
 const $AwardLore = Java.loadClass('net.minecraft.world.item.component.ItemLore')
 const $AwardList = Java.loadClass('java.util.ArrayList')
+const $AwardDropsEvent = Java.loadClass('net.neoforged.neoforge.event.level.BlockDropsEvent')
+const $AwardRegistries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
 
+// Use function-scoped locals below: this Rhino build mishandles const bindings
+// in conditional branches, including the trophy-only block entity component.
 function lccAwardIsTrophy(stack) {
-  return global.lccAwards.trophies.includes(String(stack.id))
+  return lccAwardIsTrophyId(stack.id)
+}
+
+function lccAwardIsTrophyId(id) {
+  var value = String(id)
+  return global.lccAwards.trophies.some(trophy => String(trophy) === value)
 }
 
 function lccAwardIsItem(stack) {
@@ -14,7 +23,7 @@ function lccAwardIsItem(stack) {
 }
 
 function lccAwardReadComponent(stack, component) {
-  const data = stack.get(component)
+  var data = stack.get(component)
   return data == null ? new $AwardTag() : data.copyTag()
 }
 
@@ -23,17 +32,17 @@ function lccAwardValid(record) {
 }
 
 function lccAwardReadItem(stack) {
-  const key = global.lccAwards.key
-  const custom = lccAwardReadComponent(stack, $AwardComponents.CUSTOM_DATA)
+  var key = global.lccAwards.key
+  var custom = lccAwardReadComponent(stack, $AwardComponents.CUSTOM_DATA)
   if (lccAwardValid(custom.getCompound(key))) return custom.getCompound(key).copy()
 
-  const blockData = lccAwardReadComponent(stack, $AwardComponents.BLOCK_ENTITY_DATA)
-  const blockRecord = blockData.getCompound('data').getCompound(key)
+  var blockData = lccAwardReadComponent(stack, $AwardComponents.BLOCK_ENTITY_DATA)
+  var blockRecord = blockData.getCompound('data').getCompound(key)
   if (lccAwardValid(blockRecord)) return blockRecord.copy()
 
   // Upgrade old /grant items from their existing lore. UUIDs cannot be recovered
   // reliably from names, so legacy records retain just the recorded names.
-  const lore = stack.get($AwardComponents.LORE)
+  var lore = stack.get($AwardComponents.LORE)
   if (lore == null) return null
   var earnedBy = ''
   var grantedBy = ''
@@ -44,36 +53,36 @@ function lccAwardReadItem(stack) {
   })
   if (!earnedBy || !grantedBy) return null
 
-  const record = new $AwardTag()
+  var record = new $AwardTag()
   record.putString('grantedBy', grantedBy)
   record.putString('grantedTo', earnedBy)
   return record
 }
 
 function lccAwardGray(value) {
-  const line = Text.gray(value)
+  var line = Text.gray(value)
   return line.setStyle(line.getStyle().withItalic(false))
 }
 
 function lccAwardApplyItem(stack, record) {
-  const key = global.lccAwards.key
-  const custom = lccAwardReadComponent(stack, $AwardComponents.CUSTOM_DATA)
+  var key = global.lccAwards.key
+  var custom = lccAwardReadComponent(stack, $AwardComponents.CUSTOM_DATA)
   custom.put(key, record.copy())
   stack.set($AwardComponents.CUSTOM_DATA, $AwardCustomData.of(custom))
 
   if (lccAwardIsTrophy(stack)) {
     // Vanilla BlockItem loads this component into the block entity on placement,
     // including offhand placement. KubeBlockEntity saves/syncs its "data" tag.
-    const blockData = lccAwardReadComponent(stack, $AwardComponents.BLOCK_ENTITY_DATA)
-    const data = blockData.getCompound('data')
+    var blockData = lccAwardReadComponent(stack, $AwardComponents.BLOCK_ENTITY_DATA)
+    var data = blockData.getCompound('data')
     data.put(key, record.copy())
     blockData.put('data', data)
     blockData.putString('id', String(stack.id))
     stack.set($AwardComponents.BLOCK_ENTITY_DATA, $AwardCustomData.of(blockData))
   }
 
-  const lines = new $AwardList()
-  const oldLore = stack.get($AwardComponents.LORE)
+  var lines = new $AwardList()
+  var oldLore = stack.get($AwardComponents.LORE)
   if (oldLore != null) {
     oldLore.lines().forEach(line => {
       var oldAwardLine = String(line.getString())
@@ -89,11 +98,11 @@ function lccAwardApplyItem(stack, record) {
 }
 
 global.lccAwards.stamp = (stack, grantor, recipient) => {
-  const record = new $AwardTag()
+  var record = new $AwardTag()
   // Entity#getUUID is renamed by KubeJS's script API. GameProfile's identity
   // getters are available directly and return the same player's UUID.
-  const grantorProfile = grantor.getGameProfile()
-  const recipientProfile = recipient.getGameProfile()
+  var grantorProfile = grantor.getGameProfile()
+  var recipientProfile = recipient.getGameProfile()
   record.putString('grantedBy', String(grantorProfile.getName()))
   record.putString('grantedByUuid', String(grantorProfile.getId()))
   record.putString('grantedTo', String(recipientProfile.getName()))
@@ -103,14 +112,14 @@ global.lccAwards.stamp = (stack, grantor, recipient) => {
 
 function lccAwardMigrateItem(stack) {
   if (!lccAwardIsItem(stack)) return false
-  const key = global.lccAwards.key
-  const custom = lccAwardReadComponent(stack, $AwardComponents.CUSTOM_DATA)
-  const blockRecord = lccAwardReadComponent(stack, $AwardComponents.BLOCK_ENTITY_DATA)
+  var key = global.lccAwards.key
+  var custom = lccAwardReadComponent(stack, $AwardComponents.CUSTOM_DATA)
+  var blockRecord = lccAwardReadComponent(stack, $AwardComponents.BLOCK_ENTITY_DATA)
     .getCompound('data').getCompound(key)
   if (lccAwardValid(custom.getCompound(key)) &&
       (!lccAwardIsTrophy(stack) || lccAwardValid(blockRecord))) return false
 
-  const record = lccAwardReadItem(stack)
+  var record = lccAwardReadItem(stack)
   if (record == null) return false
   lccAwardApplyItem(stack, record)
   return true
@@ -121,7 +130,7 @@ PlayerEvents.inventoryChanged(event => {
 })
 
 PlayerEvents.loggedIn(event => {
-  const inventory = event.player.getInventory()
+  var inventory = event.player.getInventory()
   var changed = false
   for (var slot = 0; slot < inventory.getContainerSize(); slot++) {
     if (lccAwardMigrateItem(inventory.getItem(slot))) changed = true
@@ -130,29 +139,43 @@ PlayerEvents.loggedIn(event => {
 })
 
 global.lccAwards.trophies.forEach(id => {
-  BlockEvents.placed(id, event => {
+  var trophyId = String(id)
+  BlockEvents.placed(trophyId, event => {
     // The placement event can precede BlockItem's component restoration. Send
     // the complete saved data after that finishes so Jade sees the award at once.
-    const level = event.level
-    const pos = event.block.pos.immutable()
+    var level = event.level
+    var pos = event.block.pos.immutable()
     event.server.scheduleInTicks(1, () => {
       if (!level.hasChunkAt(pos)) return
-      const block = level.getBlock(pos)
-      if (String(block.id) !== id || block.entity == null) return
+      var block = level.getBlock(pos)
+      if (String(block.id) !== trophyId || block.entity == null) return
       block.entity.sync()
     })
   })
 
-  BlockEvents.drops(id, event => {
-    // KubeJS caches the original block entity here even if the world block was
-    // already removed. Mutate existing drops to preserve tool/creative loot rules.
-    const entity = event.block.entity
-    if (entity == null) return
-    const record = entity.data.getCompound(global.lccAwards.key)
-    if (!lccAwardValid(record)) return
+})
 
-    event.items.forEach(stack => {
-      if (String(stack.id) === id) lccAwardApplyItem(stack, record)
-    })
+NativeEvents.onEvent($AwardDropsEvent, event => {
+  var trophyId = String($AwardRegistries.BLOCK.getKey(event.getState().getBlock()))
+  if (!lccAwardIsTrophyId(trophyId)) return
+
+  // CachedLevelBlock.getEntity() discards entities marked removed and asks the
+  // world for a replacement. At drop time that world position is often air.
+  // The native event retains the original entity, including all its saved data.
+  var entity = event.getBlockEntity()
+  if (entity == null) return
+  var saved = entity.saveWithoutMetadata(event.getLevel().registryAccess())
+  var record = saved.getCompound('data').getCompound(global.lccAwards.key)
+  if (!lccAwardValid(record)) {
+    record = saved.getCompound('components').getCompound('minecraft:custom_data')
+      .getCompound(global.lccAwards.key)
+  }
+  if (!lccAwardValid(record)) return
+
+  event.getDrops().forEach(drop => {
+    var stack = drop.getItem()
+    if (String(stack.id) !== trophyId) return
+    lccAwardApplyItem(stack, record)
+    drop.setItem(stack)
   })
 })
