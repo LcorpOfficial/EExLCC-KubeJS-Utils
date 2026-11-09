@@ -1,7 +1,5 @@
 // One catalogue drives item registration, recipes, and the ball stored in a gift.
 // Keep IDs stable: saved filled gifts refer to these empty item IDs.
-const $GiftBallAssetPaths = Java.loadClass('dev.latvian.mods.kubejs.KubeJSPaths')
-
 global.lccGiftBallVariants = [
   'poke', 'slate', 'azure', 'verdant', 'roseate', 'citrine',
   'great', 'ultra', 'master', 'safari', 'fast', 'level', 'lure',
@@ -35,13 +33,9 @@ StartupEvents.registry('item', event => {
       .tooltip(Text.gray('Right-Click to store a Pokémon inside'))
       .tooltip(Text.gray('Right-Click with a Pokémon inside to obtain it.'))
       .modelGenerator(model => {
-        // This callback runs again on client resource reload. Parent inheritance
-        // supplies layer0 until the matching PNG is dropped into kubejs/assets.
-        const texturePath = `kubejs/textures/item/gift_ball/${variant.item.split(':')[1]}.png`
+        // Safe registration default. Synced static models and the client asset
+        // reload handler supply the individual icons after assets are deployed.
         model.parent('kubejs:item/strange_gift_ball')
-        if ($GiftBallAssetPaths.ASSETS.resolve(texturePath).toFile().isFile()) {
-          model.texture('layer0', `kubejs:item/gift_ball/${variant.item.split(':')[1]}`)
-        }
       })
   })
 })

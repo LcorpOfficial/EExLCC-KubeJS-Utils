@@ -57,6 +57,7 @@ function environment() {
   const missing = new Set()
   const textures = new Set()
   const errors = []
+  var assetHandler
   const components = Object.fromEntries(['CUSTOM_DATA', 'CUSTOM_NAME', 'CUSTOM_MODEL_DATA', 'LORE'].map(key => [key, key]))
   const storage = { getParty: player => player.party }
   const paths = { ASSETS: { resolve: name => ({ toFile: () => ({ isFile: () => textures.has(name) }) }) } }
@@ -102,16 +103,35 @@ function environment() {
     } }) }) },
     PlayerEvents: { inventoryChanged() {} },
     ItemEvents: { rightClicked: (id, callback) => handlers.set(id, callback) },
+    ClientEvents: { generateAssets: (stage, callback) => {
+      assert.equal(stage, 'last')
+      assetHandler = callback
+    } },
     Item: { exists: id => !missing.has(id), of: id => new Stack(id) }
   })
   const run = file => vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file })
   run('startup_scripts/gift_balls.js')
   run('server_scripts/gift_ball.js')
+  run('client_scripts/gift_ball_assets.js')
   // Presentation formatting is unchanged apart from a variety line; isolate
   // transfer tests from Minecraft's text, species, stat, and move registries.
   context.giftBallPokemonTitle = pokemon => pokemon.state.name
   context.giftBallPokemonLore = (pokemon, variant) => variant?.name || 'Legacy gift'
-  return { context, builders, recipes, handlers, missing, textures, errors }
+  function reloadAssets() {
+    const models = new Map()
+    // Disk assets override registration models. The final client asset stage
+    // must then override disk models, including stale icon references.
+    for (const id of builders.keys()) {
+      const name = id.split(':')[1]
+      models.set(id, JSON.parse(fs.readFileSync(path.join(root, 'assets/kubejs/models/item', name + '.json'), 'utf8')))
+    }
+    assetHandler({ json: (id, model) => {
+      const itemId = id.replace(':models/item/', ':').replace(/\.json$/, '')
+      models.set(itemId, JSON.parse(JSON.stringify(model)))
+    } })
+    return models
+  }
+  return { context, builders, recipes, handlers, missing, textures, errors, reloadAssets }
 }
 
 function playerWith(stack) {
@@ -177,14 +197,12 @@ test('every registered variety crafts from its exact ball, keeps Pokemon data, a
 test('icons inherit Strange, use available PNGs, and detect later additions and removals', () => {
   const env = environment()
   function modelFor(id) {
-    const model = { textures: {}, parent(value) { this.parentId = value }, texture(key, value) { this.textures[key] = value } }
-    env.builders.get(id).modelGeneratorValue(model)
-    return model
+    return env.reloadAssets().get(id)
   }
   for (const id of env.builders.keys()) {
     const model = modelFor(id)
-    assert.equal(model.parentId, 'kubejs:item/strange_gift_ball')
-    assert.deepEqual(model.textures, {})
+    assert.equal(model.parent, 'kubejs:item/strange_gift_ball')
+    assert.equal(model.textures, undefined)
   }
   for (const file of fs.readdirSync(path.join(root, 'assets/kubejs/textures/item/gift_ball'))) {
     env.textures.add('kubejs/textures/item/gift_ball/' + file)
@@ -192,11 +210,28 @@ test('icons inherit Strange, use available PNGs, and detect later additions and 
   assert.equal(modelFor('kubejs:great_gift_ball').textures.layer0, 'kubejs:item/gift_ball/great_gift_ball')
   const mythTexture = 'kubejs/textures/item/gift_ball/myth_gift_ball.png'
   env.textures.delete(mythTexture)
-  assert.deepEqual(modelFor('kubejs:myth_gift_ball').textures, {})
+  assert.equal(modelFor('kubejs:myth_gift_ball').textures, undefined)
   env.textures.add(mythTexture)
   assert.equal(modelFor('kubejs:myth_gift_ball').textures.layer0, 'kubejs:item/gift_ball/myth_gift_ball')
   env.textures.delete(mythTexture)
-  assert.deepEqual(modelFor('kubejs:myth_gift_ball').textures, {})
+  assert.equal(modelFor('kubejs:myth_gift_ball').textures, undefined)
+  // A removed synced icon must override its shipped static model with fallback.
+  env.textures.delete('kubejs/textures/item/gift_ball/great_gift_ball.png')
+  assert.equal(modelFor('kubejs:great_gift_ball').textures, undefined)
+})
+
+test('synced static item models directly reference each existing icon', () => {
+  const env = environment()
+  for (const id of env.builders.keys()) {
+    const name = id.split(':')[1]
+    const model = JSON.parse(fs.readFileSync(path.join(root, 'assets/kubejs/models/item', name + '.json'), 'utf8'))
+    assert.equal(model.parent, 'kubejs:item/strange_gift_ball')
+    if (fs.existsSync(path.join(root, 'assets/kubejs/textures/item/gift_ball', name + '.png'))) {
+      assert.equal(model.textures.layer0, 'kubejs:item/gift_ball/' + name)
+    } else {
+      assert.equal(model.textures, undefined)
+    }
+  }
 })
 
 test('full storage leaves the filled gift intact for a later attempt', () => {

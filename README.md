@@ -21,8 +21,13 @@ for example `great_gift_ball.png` or `myth_gift_ball.png`. Missing icons inherit
 reload client resources with F3+T; no script or model edits are needed. The
 fallback is selected again if an icon is removed.
 
-Deploy the startup scripts and assets to clients as well as the server, and
-restart both once to register the new item IDs. Later icon additions only need
-asset distribution and a client resource reload.
+Item model JSON files for the current icons are included in `assets/kubejs/models/item/`
+so KubeJS Sync deploys the texture references together with the PNGs. The final
+client asset stage in `client_scripts/gift_ball_assets.js` refreshes those models
+after asset deployment, including new icons and removals.
+
+Let KubeJS Sync deploy the startup scripts, client scripts, and assets. Restart
+both client and server once when adding new item IDs. Later icon additions only
+need syncing and a client resource reload.
 
 Run the transfer and icon fallback checks with `node tests/gift_ball.test.cjs`.

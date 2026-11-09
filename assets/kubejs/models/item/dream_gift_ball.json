@@ -1,0 +1,6 @@
+{
+  "parent": "kubejs:item/strange_gift_ball",
+  "textures": {
+    "layer0": "kubejs:item/gift_ball/dream_gift_ball"
+  }
+}
