@@ -1,0 +1,15 @@
+{
+  "gui_light": "side",
+  "parent": "minecraft:builtin/entity",
+  "textures": {
+    "particle": "cobblemon:item/poke_balls/cherish_ball"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "kubejs:item/strange_gift_ball"
+    }
+  ]
+}

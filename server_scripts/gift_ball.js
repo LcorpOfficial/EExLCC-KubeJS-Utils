@@ -1,7 +1,8 @@
-// A componentless cobblemon:pokemon_model is an empty Gift Ball.
+// Empty Gift Balls have their own kubejs:*_gift_ball IDs. Legacy componentless
+// cobblemon:pokemon_model stacks still work as generic Gift Balls.
 //
-// Empty presentation uses vanilla item components. Once filled, the complete
-// Pokemon is stored as NBT in minecraft:custom_data while Cobblemon's own
+// Once filled, the complete Pokemon is stored as NBT in minecraft:custom_data
+// alongside the gift variety, while Cobblemon's own
 // pokemon_item component supplies the species/aspects used by its item renderer.
 
 const $GiftBallCobblemon = Java.loadClass('com.cobblemon.mod.common.Cobblemon')
@@ -23,17 +24,43 @@ const $GiftBallStyle = Java.loadClass('net.minecraft.network.chat.Style')
 const $GiftBallSimpleColor = Java.loadClass('dev.latvian.mods.kubejs.color.SimpleColor')
 const $GiftBallArrayList = Java.loadClass('java.util.ArrayList')
 const $GiftBallUUID = Java.loadClass('java.util.UUID')
+const $GiftBallBuiltInRegistries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
+const $GiftBallResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation')
 
 const GIFT_BALL_DATA_KEY = 'lccGiftBall'
 const GIFT_BALL_POKEMON_KEY = 'pokemon'
 const GIFT_BALL_VERSION_KEY = 'version'
+const GIFT_BALL_VARIANT_KEY = 'giftBall'
 const GIFT_BALL_SESSION_KEY = 'lccGiftBallSession'
 const GIFT_BALL_MODEL_DATA = 1
-const GIFT_BALL_PRESENTATION_VERSION = 2
+const GIFT_BALL_PRESENTATION_VERSION = 3
 const GIFT_BALL_COLOR_GRAY = 0xAAAAAA
 const GIFT_BALL_COLOR_NAME = 0xFF55FF
 const GIFT_BALL_COLOR_ASPECT = 0x55FFFF
 const GIFT_BALL_COLOR_GOOD = 0x55FF55
+
+function giftBallVariantForItem(itemId) {
+  return global.lccGiftBallVariants.find(variant => variant.item === String(itemId)) || null
+}
+
+function giftBallVariant(stack) {
+  const data = giftBallReadCustomData(stack).getCompound(GIFT_BALL_DATA_KEY)
+  if (!data.contains(GIFT_BALL_VARIANT_KEY, 8)) return giftBallVariantForItem(stack.id)
+
+  const itemId = String(data.getString(GIFT_BALL_VARIANT_KEY))
+  const variant = giftBallVariantForItem(itemId)
+  if (variant == null) throw new Error('Unknown Gift Ball variety: ' + itemId)
+  return variant
+}
+
+function giftBallCaughtBall(variant) {
+  // Resolve through the actual item, including Fai's custom PokeBallItem.
+  // Missing/removed ball mods must leave the gift intact rather than silently
+  // releasing its Pokemon with a different ball.
+  if (!Item.exists(variant.ball)) throw new Error('Missing Poké Ball item: ' + variant.ball)
+  const ballItem = $GiftBallBuiltInRegistries.ITEM.get($GiftBallResourceLocation.parse(variant.ball))
+  return ballItem.getPokeBall()
+}
 
 function giftBallPlainText(value) {
   return $GiftBallComponent.literal(value).setStyle($GiftBallStyle.EMPTY.withItalic(false))
@@ -183,7 +210,7 @@ function giftBallPokemonTitle(pokemon) {
   return giftBallTitle
 }
 
-function giftBallPokemonLore(pokemon) {
+function giftBallPokemonLore(pokemon, variant) {
   var giftBallLore = new $GiftBallArrayList()
   var giftBallHeldItem = pokemon.heldItem()
   var giftBallAbility = pokemon.getAbility()
@@ -230,6 +257,7 @@ function giftBallPokemonLore(pokemon) {
     giftBallOriginalTrainer = 'Unknown'
   }
   giftBallLore.add(giftBallGrayText(''))
+  if (variant != null) giftBallLore.add(giftBallGrayText('Gift Ball: ' + variant.name))
   giftBallLore.add(giftBallGrayText('OT: ' + giftBallOriginalTrainer))
 
   return new $GiftBallItemLore(giftBallLore)
@@ -257,7 +285,7 @@ function giftBallRefreshFilledPresentation(player, stack) {
       $GiftBallDataComponents.CUSTOM_NAME,
       giftBallPokemonTitle(giftBallRefreshPokemon)
     )
-    stack.set($GiftBallDataComponents.LORE, giftBallPokemonLore(giftBallRefreshPokemon))
+    stack.set($GiftBallDataComponents.LORE, giftBallPokemonLore(giftBallRefreshPokemon, giftBallVariant(stack)))
     stack.remove($GiftBallDataComponents.CUSTOM_MODEL_DATA)
 
     giftBallRefreshData.putInt(GIFT_BALL_VERSION_KEY, GIFT_BALL_PRESENTATION_VERSION)
@@ -289,11 +317,14 @@ function giftBallHasStoredPokemon(stack) {
 }
 
 function giftBallIsEmpty(stack) {
-  return stack.get($GiftBallItemComponents.POKEMON_ITEM) == null && !giftBallHasStoredPokemon(stack)
+  return (giftBallVariantForItem(stack.id) != null || String(stack.id) === 'cobblemon:pokemon_model') &&
+    stack.get($GiftBallItemComponents.POKEMON_ITEM) == null && !giftBallHasStoredPokemon(stack)
 }
 
 function giftBallApplyEmptyComponents(stack) {
   if (!giftBallIsEmpty(stack)) return
+  // Modern empty items get their name, tooltip, and model from registration.
+  if (giftBallVariantForItem(stack.id) != null) return
 
   const lore = new $GiftBallArrayList()
   lore.add(giftBallGrayText('Right-Click to store a Pokémon inside'))
@@ -307,19 +338,15 @@ function giftBallApplyEmptyComponents(stack) {
   )
 }
 
-function giftBallCreateEmptyStack() {
-  const stack = Item.of('cobblemon:pokemon_model')
-  giftBallApplyEmptyComponents(stack)
-  return stack
-}
-
 ServerEvents.recipes(event => {
-  event.shaped(giftBallCreateEmptyStack(), [
-    'LBL'
-  ], {
-    L: 'cobblemon:link_cable',
-    B: '#cobblemon:poke_balls'
-  }).id('lcc:gift_ball')
+  event.remove({ id: 'lcc:gift_ball' })
+  global.lccGiftBallVariants.forEach(variant => {
+    if (!Item.exists(variant.ball)) return
+    event.shaped(variant.item, ['LBL'], {
+      L: 'cobblemon:link_cable',
+      B: variant.ball
+    }).id('lcc:' + variant.item.split(':')[1])
+  })
 })
 
 function giftBallFindSessionStack(player, sessionId) {
@@ -331,7 +358,7 @@ function giftBallFindSessionStack(player, sessionId) {
 
   for (giftBallSearchSlot = 0; giftBallSearchSlot < giftBallSearchInventory.getContainerSize(); giftBallSearchSlot++) {
     giftBallSearchStack = giftBallSearchInventory.getItem(giftBallSearchSlot)
-    if (giftBallSearchStack.isEmpty() || String(giftBallSearchStack.id) !== 'cobblemon:pokemon_model') continue
+    if (giftBallSearchStack.isEmpty() || !giftBallIsEmpty(giftBallSearchStack)) continue
 
     giftBallSearchRoot = giftBallReadCustomData(giftBallSearchStack)
     if (!giftBallSearchRoot.contains(GIFT_BALL_SESSION_KEY)) continue
@@ -383,6 +410,8 @@ function giftBallStoreSelectedPokemon(player, sessionId, selectedPokemon) {
   var giftBallItemInstalled = false
   var giftBallStoreServer
   var giftBallStoredPokemonNbt
+  var giftBallStoredPokemon
+  var giftBallStoreVariant
   var giftBallFilledStack
   var giftBallFilledRoot
   var giftBallStoredData
@@ -409,14 +438,29 @@ function giftBallStoreSelectedPokemon(player, sessionId, selectedPokemon) {
       new $GiftBallCompoundTag()
     )
 
+    // Change a detached copy so a failed store never alters the party Pokemon.
+    giftBallStoreVariant = giftBallVariant(located.stack)
+    giftBallStoredPokemon = new $GiftBallPokemon()
+    giftBallStoredPokemon.loadFromNBT(giftBallStoreServer.registryAccess(), giftBallStoredPokemonNbt)
+    if (giftBallStoreVariant != null) {
+      giftBallStoredPokemon.setCaughtBall(giftBallCaughtBall(giftBallStoreVariant))
+    }
+    giftBallStoredPokemonNbt = giftBallStoredPokemon.saveToNBT(
+      giftBallStoreServer.registryAccess(),
+      new $GiftBallCompoundTag()
+    )
+
     // Cobblemon installs its pokemon_item component internally in this factory.
     // Do not copy that component with ItemStack#set: KubeJS attempts to pass it
     // through the component codec, which rejects Cobblemon's nullable tint.
-    giftBallFilledStack = $GiftBallPokemonItem.from(currentPokemon)
+    giftBallFilledStack = $GiftBallPokemonItem.from(giftBallStoredPokemon)
 
     giftBallFilledRoot = giftBallReadCustomData(giftBallFilledStack)
     giftBallStoredData = new $GiftBallCompoundTag()
     giftBallStoredData.putInt(GIFT_BALL_VERSION_KEY, GIFT_BALL_PRESENTATION_VERSION)
+    if (giftBallStoreVariant != null) {
+      giftBallStoredData.putString(GIFT_BALL_VARIANT_KEY, giftBallStoreVariant.item)
+    }
     giftBallStoredData.put(GIFT_BALL_POKEMON_KEY, giftBallStoredPokemonNbt)
     giftBallFilledRoot.remove(GIFT_BALL_SESSION_KEY)
     giftBallFilledRoot.put(GIFT_BALL_DATA_KEY, giftBallStoredData)
@@ -426,9 +470,12 @@ function giftBallStoreSelectedPokemon(player, sessionId, selectedPokemon) {
     // selected Pokemon's nickname, species, special aspects, and level.
     giftBallFilledStack.set(
       $GiftBallDataComponents.CUSTOM_NAME,
-      giftBallPokemonTitle(currentPokemon)
+      giftBallPokemonTitle(giftBallStoredPokemon)
     )
-    giftBallFilledStack.set($GiftBallDataComponents.LORE, giftBallPokemonLore(currentPokemon))
+    giftBallFilledStack.set(
+      $GiftBallDataComponents.LORE,
+      giftBallPokemonLore(giftBallStoredPokemon, giftBallStoreVariant)
+    )
     giftBallFilledStack.remove($GiftBallDataComponents.CUSTOM_MODEL_DATA)
 
     if (!party.remove(currentPokemon)) {
@@ -489,6 +536,7 @@ function giftBallReleasePokemon(player, stack) {
   var giftBallReleasePokemonNbt
   var giftBallReleasedPokemon
   var giftBallReleaseParty
+  var giftBallReleaseVariant
 
   try {
     giftBallReleaseRoot = giftBallReadCustomData(stack)
@@ -496,6 +544,10 @@ function giftBallReleasePokemon(player, stack) {
     giftBallReleasePokemonNbt = giftBallReleaseData.getCompound(GIFT_BALL_POKEMON_KEY).copy()
     giftBallReleasedPokemon = new $GiftBallPokemon()
     giftBallReleasedPokemon.loadFromNBT(player.getServer().registryAccess(), giftBallReleasePokemonNbt)
+    giftBallReleaseVariant = giftBallVariant(stack)
+    if (giftBallReleaseVariant != null) {
+      giftBallReleasedPokemon.setCaughtBall(giftBallCaughtBall(giftBallReleaseVariant))
+    }
 
     giftBallReleaseParty = $GiftBallCobblemon.INSTANCE.getStorage().getParty(player)
     if (!giftBallReleaseParty.add(giftBallReleasedPokemon)) {
@@ -524,7 +576,7 @@ PlayerEvents.inventoryChanged('cobblemon:pokemon_model', event => {
   }
 })
 
-ItemEvents.rightClicked('cobblemon:pokemon_model', event => {
+function giftBallRightClicked(event) {
   const player = event.player
   const stack = event.item
   if (player == null || stack == null) return
@@ -549,4 +601,9 @@ ItemEvents.rightClicked('cobblemon:pokemon_model', event => {
   giftBallApplyEmptyComponents(stack)
   giftBallOpenParty(player, stack)
   event.cancel()
+}
+
+ItemEvents.rightClicked('cobblemon:pokemon_model', giftBallRightClicked)
+global.lccGiftBallVariants.forEach(variant => {
+  ItemEvents.rightClicked(variant.item, giftBallRightClicked)
 })
