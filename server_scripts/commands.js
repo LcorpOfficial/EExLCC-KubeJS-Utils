@@ -391,11 +391,6 @@ ServerEvents.commandRegistry(event => {
     }
   }
 
-  function grayLine(text) {
-    // Lore JSON format (works broadly across versions via KubeJS)
-    return Text.gray(text)
-  }
-
   function toJsArray(javaIterable) {
   const arr = []
   javaIterable.forEach(v => arr.push(String(v)))
@@ -468,15 +463,10 @@ ServerEvents.commandRegistry(event => {
                       return 0
                     }
 
-                    // Build stack with lore
-                    const earnedBy = target.name?.string ?? target.getName().string
-                    const grantedBy = executor.name?.string ?? executor.getName().string
-
-                    const stack = Item.of(fullId)
-                      .withLore([
-                        grayLine(`Earned by: ${earnedBy}`),
-                        grayLine(`Granted by: ${grantedBy}`)
-                      ])
+                    // Shared structured metadata on badges and trophy items;
+                    // trophies also carry the block entity data for placement.
+                    const earnedBy = String(target.getGameProfile().getName())
+                    const stack = global.lccAwards.stamp(Item.of(fullId), executor, target)
 
                     target.give(stack)
 

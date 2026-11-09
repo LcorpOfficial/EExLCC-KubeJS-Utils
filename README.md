@@ -31,3 +31,27 @@ both client and server once when adding new item IDs. Later icon additions only
 need syncing and a client resource reload.
 
 Run the transfer and icon fallback checks with `node tests/gift_ball.test.cjs`.
+
+## Award metadata
+
+`/grant badge <choice> <player>` and `/grant trophy <choice> <player>` store an
+`lccAward` compound in the item's `minecraft:custom_data`. It contains
+`grantedBy`, `grantedByUuid`, `grantedTo`, and `grantedToUuid`. Names are the
+player names at the time of the award; UUIDs preserve their identity.
+
+Trophy items also carry this record in
+`minecraft:block_entity_data.data.lccAward`. Vanilla placement restores it into
+the trophy's saved block entity, and normal trophy drops copy it back to the
+item along with its award lore. The record stays with the award when another
+player places or breaks it. Jade displays “Earned by” and “Granted by” from the
+synced block entity. Jade is optional; persistence works without it.
+
+Existing lore-only awards are upgraded when their inventory changes or their
+holder logs in. Those upgrades preserve the names already recorded and leave
+UUIDs absent. Previously placed trophies that already lost their lore have no
+award information to recover.
+
+Sync the scripts and restart both server and client to add trophy block entities
+and the Jade callback. The grant command's permissions and syntax are unchanged.
+
+Run the award persistence checks with `node tests/award_metadata.test.cjs`.
