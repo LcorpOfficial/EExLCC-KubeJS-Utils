@@ -9,3 +9,6 @@
 # Instance-specific sync settings and web server credentials
 /config/kubejs_sync.json
 /config/web_server.json
+
+# Local regression checks
+/tests/
