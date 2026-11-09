@@ -53,8 +53,14 @@ StartupEvents.init(() => {
       // supplies the authoritative record fetched by appendServerData instead.
       var record = accessor.getServerData().getCompound(awardKey)
       if (!validRecord(record)) return
-      tooltip.add(Text.gray('Earned by: ' + record.getString('grantedTo')))
-      tooltip.add(Text.gray('Granted by: ' + record.getString('grantedBy')))
+      // Rhino also considers add(List) for Component arguments. Select the
+      // Component overload explicitly so Jade receives two text lines.
+      tooltip['add(net.minecraft.network.chat.Component)'](
+        Text.gray('Earned by: ' + record.getString('grantedTo'))
+      )
+      tooltip['add(net.minecraft.network.chat.Component)'](
+        Text.gray('Granted by: ' + record.getString('grantedBy'))
+      )
     }
   }), AwardBlock)
 })

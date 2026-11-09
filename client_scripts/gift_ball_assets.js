@@ -7,7 +7,9 @@ ClientEvents.generateAssets('last', event => {
   global.lccGiftBallVariants.forEach(variant => {
     var giftBallAssetName = variant.item.split(':')[1]
     var giftBallAssetModel = { parent: 'kubejs:item/strange_gift_ball' }
-    var giftBallAssetFile = $GiftBallClientAssetPaths.ASSETS.resolve(
+    // KubeJS can select resolve(Path) and convert this relative string into an
+    // absolute GAMEDIR path, discarding ASSETS. Force the String overload.
+    var giftBallAssetFile = $GiftBallClientAssetPaths.ASSETS['resolve(java.lang.String)'](
       `kubejs/textures/item/gift_ball/${giftBallAssetName}.png`
     ).toFile()
 
