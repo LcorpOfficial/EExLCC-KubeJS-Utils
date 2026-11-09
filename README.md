@@ -43,8 +43,10 @@ Trophy items also carry this record in
 `minecraft:block_entity_data.data.lccAward`. Vanilla placement restores it into
 the trophy's saved block entity, and normal trophy drops copy it back to the
 item along with its award lore. The record stays with the award when another
-player places or breaks it. Jade displays “Earned by” and “Granted by” from the
-synced block entity. Jade is optional; persistence works without it.
+player places or breaks it. Jade displays “Earned by” and “Granted by” using
+its server-data and block-component providers in `startup_scripts/award_jade.js`.
+The tooltip reads the server response, so it does not need the client to hold
+the trophy's custom block NBT. Jade is optional; persistence works without it.
 
 Existing lore-only awards are upgraded when their inventory changes or their
 holder logs in. Those upgrades preserve the names already recorded and leave
@@ -52,6 +54,7 @@ UUIDs absent. Previously placed trophies that already lost their lore have no
 award information to recover.
 
 Sync the scripts and restart both server and client to add trophy block entities
-and the Jade callback. The grant command's permissions and syntax are unchanged.
+and register Jade's providers before its registries freeze. The grant command's
+permissions and syntax are unchanged.
 
 Run the award persistence checks with `node tests/award_metadata.test.cjs`.
