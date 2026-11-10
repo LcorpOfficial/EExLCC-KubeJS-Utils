@@ -87,7 +87,8 @@ function stickerApplySelected(player, sessionId, variant, selected) {
 
   // Resolve by UUID again: slots may have moved since the party UI opened.
   const pokemon = $StickerCobblemon.INSTANCE.getStorage().getParty(player).get(selected.getUuid())
-  if (pokemon == null || String(pokemon.getOwnerUUID()) !== String(player.getUUID())) {
+  // KubeJS hides Entity#getUUID; GameProfile exposes the same player identity.
+  if (pokemon == null || String(pokemon.getOwnerUUID()) !== String(player.getGameProfile().getId())) {
     player.tell(Text.red('That Pokémon is no longer in your party.'))
     return
   }
@@ -154,7 +155,7 @@ function stickerOpenParty(player, stack, variant) {
     // The same native party picker used by Gift Balls; ineligible entries are disabled.
     $StickerPartySelectCallbacks.INSTANCE.createFromPokemon(
       player,
-      $StickerComponent.literal('Apply ' + variant.name + ' to which Pokémon?'),
+      $StickerComponent.literal(variant.name),
       pokemon,
       selected => !stickerAlreadyApplied(selected, variant),
       cancelledBy => stickerClearSession(cancelledBy, sessionId, variant),
