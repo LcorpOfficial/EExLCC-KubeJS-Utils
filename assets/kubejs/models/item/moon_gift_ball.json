@@ -1,3 +1,6 @@
 {
-  "parent": "kubejs:item/strange_gift_ball"
+  "parent": "kubejs:item/strange_gift_ball",
+  "textures": {
+    "layer0": "kubejs:item/gift_ball/moon_gift_ball"
+  }
 }
