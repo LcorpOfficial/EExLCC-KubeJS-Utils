@@ -233,14 +233,23 @@ ServerEvents.commandRegistry(event => {
     )
   }
 
+  function applyAdminRibbon(player, pokemon) {
+    var adminMarks = Java.loadClass('com.cobblemon.mod.common.api.mark.Marks')
+    var adminResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation')
+    var adminRibbon = adminMarks.getByIdentifier(adminResourceLocation.parse('cobblemon:ribbon_admin'))
+    if (adminRibbon == null) {
+      player.tell(Text.red('The admin ribbon is not loaded! This Pokémon will not have it.'))
+    } else {
+      // Granting a mark does not replace the active mark (e.g. Alpha's eyes).
+      pokemon.exchangeMark(adminRibbon, true)
+    }
+  }
+
   function giveMaxedPokemon(source, args) {
     var maxedPokemonAdded = false
     try {
       var maxedCobblemon = Java.loadClass('com.cobblemon.mod.common.Cobblemon')
       var maxedPropertiesClass = Java.loadClass('com.cobblemon.mod.common.api.pokemon.PokemonProperties')
-      var maxedMarks = Java.loadClass('com.cobblemon.mod.common.api.mark.Marks')
-      var maxedResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation')
-      var maxedAdminRibbon = maxedMarks.getByIdentifier(maxedResourceLocation.parse('cobblemon:ribbon_admin'))
 
       // Use the same parser and creation API as /pokegiveother. Award the ribbon
       // before insertion so it also follows the new Pokemon into PC overflow.
@@ -250,12 +259,7 @@ ServerEvents.commandRegistry(event => {
         return 0
       }
       var maxedPokemon = maxedProperties.create()
-      if (maxedAdminRibbon == null) {
-        source.player.tell(Text.red('The admin ribbon is not loaded! This Pokémon will not have it.'))
-      } else {
-        maxedPokemon.exchangeMark(maxedAdminRibbon, true)
-      }
-      // Granting a mark does not replace the active mark (e.g. Alpha's eyes).
+      applyAdminRibbon(source.player, maxedPokemon)
       var maxedPokemonName = String(maxedPokemon.getDisplayName(false).getString())
       var maxedParty = maxedCobblemon.INSTANCE.getStorage().getParty(source.player)
       if (!maxedParty.add(maxedPokemon)) {
@@ -271,6 +275,43 @@ ServerEvents.commandRegistry(event => {
         ? 'The Pokémon was given, but reporting the result failed. Check your party or PC.'
         : 'Could not give the Pokémon: ' + String(error)))
       return maxedPokemonAdded ? 1 : 0
+    }
+  }
+
+  function maxPartyPokemon(source, slot, args) {
+    if (!SLOT_VALUES.includes(slot)) {
+      source.sendFailure(Text.red('Slot must be 1-6.'))
+      return 0
+    }
+
+    var pokeMaxEdited = false
+    try {
+      var pokeMaxCobblemon = Java.loadClass('com.cobblemon.mod.common.Cobblemon')
+      var pokeMaxPositionClass = Java.loadClass('com.cobblemon.mod.common.api.storage.party.PartyPosition')
+      var pokeMaxParty = pokeMaxCobblemon.INSTANCE.getStorage().getParty(source.player)
+      var pokeMaxPokemon = pokeMaxParty[
+        'get(com.cobblemon.mod.common.api.storage.party.PartyPosition)'
+      ](new pokeMaxPositionClass(Number(slot) - 1))
+      if (pokeMaxPokemon == null) {
+        source.sendFailure(Text.red('Party slot ' + slot + ' is empty.'))
+        return 0
+      }
+
+      // Entity.runCommandSilent returns void. Dispatch through the source to
+      // check whether the native edit succeeded before granting the ribbon.
+      var pokeMaxCommand = 'pokeeditother @s ' + slot + ' ' +
+        (args ? args + ' ' : '') + getMaxedPokemonSuffix()
+      var pokeMaxResult = source.getServer().getCommands().performPrefixedCommand(source, pokeMaxCommand)
+      if (pokeMaxResult <= 0) return 0
+      pokeMaxEdited = true
+      applyAdminRibbon(source.player, pokeMaxPokemon)
+      return pokeMaxResult
+    } catch (error) {
+      console.error('[pokemax] ' + String(error))
+      source.sendFailure(Text.red(pokeMaxEdited
+        ? 'The Pokémon was maxed, but the Admin Ribbon could not be applied: ' + String(error)
+        : 'Could not max the Pokémon: ' + String(error)))
+      return pokeMaxEdited ? 1 : 0
     }
   }
 
@@ -325,7 +366,7 @@ ServerEvents.commandRegistry(event => {
 
   event.register(
     Commands.literal('pokemax')
-      .requires(src => src.hasPermission(2)) // ops only
+      .requires(src => !!src.player && src.hasPermission(2)) // player operators only
       .then(
         Commands.argument('slot', StringArgumentType.word())
           .suggests((ctx, builder) => suggestList(builder, SLOT_VALUES))
@@ -333,14 +374,7 @@ ServerEvents.commandRegistry(event => {
             const source = ctx.source
             const slot = StringArgumentType.getString(ctx, 'slot')
 
-            if (!SLOT_VALUES.includes(slot)) {
-              source.player?.tell(Text.red('Slot must be 1-6.'))
-              return 0
-            }
-
-            const cmd = `pokeeditother @s ${slot} ${getMaxedPokemonSuffix()}`
-            runAsSource(source, cmd)
-            return 1
+            return maxPartyPokemon(source, slot, '')
           })
           .then(
             Commands.argument('args', StringArgumentType.greedyString())
@@ -349,17 +383,7 @@ ServerEvents.commandRegistry(event => {
                 const slot = StringArgumentType.getString(ctx, 'slot')
                 const args = StringArgumentType.getString(ctx, 'args')
 
-                if (!SLOT_VALUES.includes(slot)) {
-                  source.player?.tell(Text.red('Slot must be 1-6.'))
-                  return 0
-                }
-
-                const cmd =
-                  `pokeeditother @s ${slot} ${args} ` +
-                  getMaxedPokemonSuffix()
-
-                runAsSource(source, cmd)
-                return 1
+                return maxPartyPokemon(source, slot, args)
               })
           )
       )
@@ -650,10 +674,31 @@ ServerEvents.commandRegistry(event => {
       return 0
     }
 
+    const hypertrainCobblemon = Java.loadClass('com.cobblemon.mod.common.Cobblemon')
+    const hypertrainPosition = Java.loadClass('com.cobblemon.mod.common.api.storage.party.PartyPosition')
+    const hypertrainParty = hypertrainCobblemon.INSTANCE.getStorage().getParty(source.player)
+    const hypertrainPokemon = hypertrainParty[
+      'get(com.cobblemon.mod.common.api.storage.party.PartyPosition)'
+    ](new hypertrainPosition(Number(slot) - 1))
+    if (hypertrainPokemon == null) {
+      source.player.tell(Text.red('Party slot ' + slot + ' is empty.'))
+      return 0
+    }
+
     const resetCmd = `pokeedit ${slot} hp_ev=0 attack_ev=0 defence_ev=0 special_attack_ev=0 special_defence_ev=0 speed_ev=0 nature=serious`
     const applyCmd = `pokeedit ${slot} ${statA}_ev=252 ${statB}_ev=252 nature=${nature}`
     runAsSource(source, resetCmd)
     runAsSource(source, applyCmd)
+    const hypertrainStatNames = {
+      hp: 'HP', attack: 'Attack', defence: 'Defence',
+      special_attack: 'Special Attack', special_defence: 'Special Defence', speed: 'Speed'
+    }
+    const hypertrainNatureName = nature.charAt(0).toUpperCase() + nature.slice(1)
+    source.player.tell(Text.green(
+      hypertrainPokemon.getDisplayName(false).getString() + ' was set to max EVs for ' +
+      hypertrainStatNames[statA] + ' and ' + hypertrainStatNames[statB] +
+      ', with ' + hypertrainNatureName + ' nature.'
+    ))
     return 1
   }
 
@@ -667,7 +712,7 @@ ServerEvents.commandRegistry(event => {
 
   event.register(
     Commands.literal('hypertrain')
-      .requires(src => src.hasPermission(2))
+      .requires(src => !!src.player && src.hasPermission(2))
       .then(
         Commands.argument('slot', StringArgumentType.word())
           .suggests((ctx, builder) => suggestList(builder, SLOT_VALUES))
