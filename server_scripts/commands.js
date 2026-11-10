@@ -241,10 +241,6 @@ ServerEvents.commandRegistry(event => {
       var maxedMarks = Java.loadClass('com.cobblemon.mod.common.api.mark.Marks')
       var maxedResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation')
       var maxedAdminRibbon = maxedMarks.getByIdentifier(maxedResourceLocation.parse('cobblemon:ribbon_admin'))
-      if (maxedAdminRibbon == null) {
-        source.sendFailure(Text.red('The Admin Ribbon is not loaded. No Pokémon was given.'))
-        return 0
-      }
 
       // Use the same parser and creation API as /pokegiveother. Award the ribbon
       // before insertion so it also follows the new Pokemon into PC overflow.
@@ -254,7 +250,11 @@ ServerEvents.commandRegistry(event => {
         return 0
       }
       var maxedPokemon = maxedProperties.create()
-      maxedPokemon.exchangeMark(maxedAdminRibbon, true)
+      if (maxedAdminRibbon == null) {
+        source.player.tell(Text.red('The admin ribbon is not loaded! This Pokémon will not have it.'))
+      } else {
+        maxedPokemon.exchangeMark(maxedAdminRibbon, true)
+      }
       // Granting a mark does not replace the active mark (e.g. Alpha's eyes).
       var maxedPokemonName = String(maxedPokemon.getDisplayName(false).getString())
       var maxedParty = maxedCobblemon.INSTANCE.getStorage().getParty(source.player)
@@ -263,7 +263,7 @@ ServerEvents.commandRegistry(event => {
         return 0
       }
       maxedPokemonAdded = true
-      source.player.tell(Text.green('You received ' + maxedPokemonName + ' with the Admin Ribbon.'))
+      source.player.tell(Text.green('You received ' + maxedPokemonName + ' with perfect IVs, at level 100.'))
       return 1
     } catch (error) {
       console.error('[pokegivemaxed] ' + String(error))

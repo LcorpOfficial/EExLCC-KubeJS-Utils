@@ -12,7 +12,7 @@ the `gym_leader` player tag. Use tab completion for available choices.
 | --- | --- |
 | `/pokeclone <slot> [player]` | Copy a Pokémon from your party to yourself or another online player. |
 | `/resetevs <slot>` | Clear all EVs on one of your party Pokémon. |
-| `/pokegivemaxed <species> [properties]` | Give yourself a level 100 Pokémon with perfect IVs, an Ancient Origin Ball, and the Admin Ribbon. |
+| `/pokegivemaxed <species> [properties]` | Give yourself a level 100 Pokémon with perfect IVs, an Ancient Origin Ball, and the Admin Ribbon when available. |
 | `/pokemax <slot> [properties]` | Set a party Pokémon to level 100, perfect IVs, and an Ancient Origin Ball. |
 | `/hypertrain <slot> <preset>` | Reset EVs, then set two stats to 252 EVs and apply the preset's nature. |
 | `/hypertrain <slot> custom <stat1> <stat2> <nature>` | Choose two different EV stats and a nature modifier such as `+attack-special_attack` or `neutral`. |
