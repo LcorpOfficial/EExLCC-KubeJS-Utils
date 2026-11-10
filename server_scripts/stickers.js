@@ -25,12 +25,16 @@ function stickerWriteData(stack, tag) {
 
 function stickerFindStack(player, sessionId, variant) {
   const inventory = player.getInventory()
-  for (let slot = 0; slot < inventory.getContainerSize(); slot++) {
-    const stack = inventory.getItem(slot)
-    if (stack.isEmpty() || String(stack.id) !== variant.item) continue
-    const data = stickerReadData(stack)
-    if (!data.contains(STICKER_SESSION_KEY, 8)) continue
-    if (String(data.getString(STICKER_SESSION_KEY)) === sessionId) return stack
+  // Rhino 2101 reuses loop scopes and redeclares const bindings on iteration.
+  var stickerSearchSlot
+  var stickerSearchStack
+  var stickerSearchData
+  for (stickerSearchSlot = 0; stickerSearchSlot < inventory.getContainerSize(); stickerSearchSlot++) {
+    stickerSearchStack = inventory.getItem(stickerSearchSlot)
+    if (stickerSearchStack.isEmpty() || String(stickerSearchStack.id) !== variant.item) continue
+    stickerSearchData = stickerReadData(stickerSearchStack)
+    if (!stickerSearchData.contains(STICKER_SESSION_KEY, 8)) continue
+    if (String(stickerSearchData.getString(STICKER_SESSION_KEY)) === sessionId) return stickerSearchStack
   }
   return null
 }
@@ -126,10 +130,11 @@ function stickerOpenParty(player, stack, variant) {
   const pokemon = new $StickerArrayList()
   const iterator = party.iterator()
   let eligible = false
+  var stickerPartyMember
   while (iterator.hasNext()) {
-    const member = iterator.next()
-    pokemon.add(member)
-    if (!stickerAlreadyApplied(member, variant)) eligible = true
+    stickerPartyMember = iterator.next()
+    pokemon.add(stickerPartyMember)
+    if (!stickerAlreadyApplied(stickerPartyMember, variant)) eligible = true
   }
   if (pokemon.isEmpty()) {
     player.tell(Text.red('There are no Pokémon in your party to apply a sticker to.'))
