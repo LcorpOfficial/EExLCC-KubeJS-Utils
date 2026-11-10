@@ -297,15 +297,19 @@ ServerEvents.commandRegistry(event => {
         return 0
       }
 
-      // Entity.runCommandSilent returns void. Dispatch through the source to
-      // check whether the native edit succeeded before granting the ribbon.
-      var pokeMaxCommand = 'pokeeditother @s ' + slot + ' ' +
+      // Use pokeedit's native API: Minecraft's command dispatcher returns void
+      // and nested commands may execute after this callback has returned.
+      var pokeMaxPropertiesClass = Java.loadClass('com.cobblemon.mod.common.api.pokemon.PokemonProperties')
+      var pokeMaxProperties = pokeMaxPropertiesClass.Companion.parse(
         (args ? args + ' ' : '') + getMaxedPokemonSuffix()
-      var pokeMaxResult = source.getServer().getCommands().performPrefixedCommand(source, pokeMaxCommand)
-      if (pokeMaxResult <= 0) return 0
+      )
+      pokeMaxProperties.apply(pokeMaxPokemon)
       pokeMaxEdited = true
       applyAdminRibbon(source.player, pokeMaxPokemon)
-      return pokeMaxResult
+      source.player.tell(Text.green(
+        pokeMaxPokemon.getDisplayName(false).getString() + ' was set to level 100 with perfect IVs.'
+      ))
+      return 1
     } catch (error) {
       console.error('[pokemax] ' + String(error))
       source.sendFailure(Text.red(pokeMaxEdited
