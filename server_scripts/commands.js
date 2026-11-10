@@ -233,6 +233,47 @@ ServerEvents.commandRegistry(event => {
     )
   }
 
+  function giveMaxedPokemon(source, args) {
+    var maxedPokemonAdded = false
+    try {
+      var maxedCobblemon = Java.loadClass('com.cobblemon.mod.common.Cobblemon')
+      var maxedPropertiesClass = Java.loadClass('com.cobblemon.mod.common.api.pokemon.PokemonProperties')
+      var maxedMarks = Java.loadClass('com.cobblemon.mod.common.api.mark.Marks')
+      var maxedResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation')
+      var maxedAdminRibbon = maxedMarks.getByIdentifier(maxedResourceLocation.parse('cobblemon:ribbon_admin'))
+      if (maxedAdminRibbon == null) {
+        source.sendFailure(Text.red('The Admin Ribbon is not loaded. No Pokémon was given.'))
+        return 0
+      }
+
+      // Use the same parser and creation API as /pokegiveother. Award the ribbon
+      // before insertion so it also follows the new Pokemon into PC overflow.
+      var maxedProperties = maxedPropertiesClass.Companion.parse(args + ' ' + getMaxedPokemonSuffix())
+      if (maxedProperties.getSpecies() == null) {
+        source.sendFailure(Text.red('Specify a valid Pokémon species.'))
+        return 0
+      }
+      var maxedPokemon = maxedProperties.create()
+      maxedPokemon.exchangeMark(maxedAdminRibbon, true)
+      // Granting a mark does not replace the active mark (e.g. Alpha's eyes).
+      var maxedPokemonName = String(maxedPokemon.getDisplayName(false).getString())
+      var maxedParty = maxedCobblemon.INSTANCE.getStorage().getParty(source.player)
+      if (!maxedParty.add(maxedPokemon)) {
+        source.sendFailure(Text.red('Your party and PC could not accept the Pokémon. No Pokémon was given.'))
+        return 0
+      }
+      maxedPokemonAdded = true
+      source.player.tell(Text.green('You received ' + maxedPokemonName + ' with the Admin Ribbon.'))
+      return 1
+    } catch (error) {
+      console.error('[pokegivemaxed] ' + String(error))
+      source.sendFailure(Text.red(maxedPokemonAdded
+        ? 'The Pokémon was given, but reporting the result failed. Check your party or PC.'
+        : 'Could not give the Pokémon: ' + String(error)))
+      return maxedPokemonAdded ? 1 : 0
+    }
+  }
+
   function suggestList(builder, values) {
     const remaining = String(builder.getRemaining()).toLowerCase()
     values.forEach(v => {
@@ -264,25 +305,18 @@ ServerEvents.commandRegistry(event => {
       )
   )
 
-  // macro for pokegive with max IVs and level 100, just add species and other args
+  // Give a level 100 Pokemon with perfect IVs, an Ancient Origin Ball, and the Admin Ribbon.
 
   event.register(
     Commands.literal('pokegivemaxed')
-      .requires(src => src.hasPermission(2)) // ops only
+      .requires(src => !!src.player && src.hasPermission(2)) // player operators only
       .then(
         Commands.argument('args', StringArgumentType.greedyString())
           .executes(ctx => {
             const source = ctx.source
             const args = StringArgumentType.getString(ctx, 'args')
 
-            const cmd =
-              `pokegiveother @s ${args} ` +
-              getMaxedPokemonSuffix()
-
-            // run as the player so @s works
-            runAsSource(source, cmd)
-
-            return 1
+            return giveMaxedPokemon(source, args)
           })
       )
   )
