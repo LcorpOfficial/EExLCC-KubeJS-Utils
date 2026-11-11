@@ -1,5 +1,11 @@
 {
   "lists": {
+    "training": [
+      "cobblemon:training_singles",
+      "cobblemon:training_doubles",
+      "cobblemon:training_triples",
+      "cobblemon:training_little_doubles"
+    ],
     "test": [
       "cobblemon:battler_test",
       "cobblemon:adminity",
