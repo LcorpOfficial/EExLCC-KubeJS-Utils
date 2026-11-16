@@ -15,6 +15,31 @@ ServerEvents.recipes(event => {
     T: 'create:fluid_tank'
   }).id('kubejs:lumisene_furnace')
 
+  const incompleteElevatorDisc = 'kubejs:incomplete_music_disc_elevator'
+
+  event.custom({
+    type: 'create:sequenced_assembly',
+    ingredient: { item: 'cobblemon:blank_tm' },
+    transitional_item: { id: incompleteElevatorDisc },
+    loops: 1,
+    sequence: [
+      {
+        type: 'create:deploying',
+        ingredients: [
+          { item: incompleteElevatorDisc },
+          { item: 'create:elevator_pulley' }
+        ],
+        results: [{ id: incompleteElevatorDisc }]
+      },
+      {
+        type: 'create:pressing',
+        ingredients: [{ item: incompleteElevatorDisc }],
+        results: [{ id: incompleteElevatorDisc }]
+      }
+    ],
+    results: [{ id: 'kubejs:music_disc_elevator' }]
+  }).id('kubejs:music_disc_elevator')
+
   const pokeTables = [
     ['poke_table_poke_ball', 'poke_ball'],
     ['poke_table_great_ball', 'great_ball'],

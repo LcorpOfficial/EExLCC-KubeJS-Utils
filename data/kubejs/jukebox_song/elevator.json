@@ -1,0 +1,9 @@
+{
+  "comparator_output": 1,
+  "description": {
+    "translate": "jukebox_song.kubejs.elevator",
+    "fallback": "Benjamin Tissot - Elevator"
+  },
+  "length_in_seconds": 254.446667,
+  "sound_event": "kubejs:music_disc.elevator"
+}

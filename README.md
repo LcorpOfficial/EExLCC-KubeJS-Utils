@@ -54,6 +54,18 @@ used during battle.
 | `kubejs:sticker_alpha` | Makes the Pokémon Alpha and grants and activates its Alpha Mark. Toggle glowing eyes through the mark menu. |
 | `kubejs:sticker_shiny` | Makes the Pokémon Shiny. |
 
+## Music Discs
+
+Elevator by Benjamin Tissot (`kubejs:music_disc_elevator`) plays in a jukebox
+for approximately 4 minutes 14 seconds. Craft it with one pass through a Create
+sequenced assembly: a Deployer applies one Elevator Pulley to a Cobblemon Blank
+TM, then a Mechanical Press finishes the disc. Both ingredients are consumed.
+Operators can also obtain it with `/give @s kubejs:music_disc_elevator`.
+
+After installing this addition, restart the server and clients to register the
+item and sound. Clients need the updated KubeJS startup scripts and assets to
+display the disc and hear its music.
+
 ## Badges and Trophies
 
 Use `/grant` to award badges and trophies. Their tooltips show who earned them
