@@ -118,8 +118,10 @@ for them to reconnect. Configuration and pending prizes are stored in the lower
 block's `data.lccGiftOMatic` NBT. Configuration also locks the machine until the
 editor saves or closes the menu.
 
-Restart the server and clients to register the blocks. Clients need the new
-startup script, client script, and assets for the model and local item display.
+Restart the server and clients to register the blocks. Clients need the startup
+scripts (including `gift_o_matic_renderer.js`) and assets for the model and local
+item display. Renderer registration runs at startup, guarded to load client
+classes only in a client environment.
 
 ### Lumisene Furnace
 
