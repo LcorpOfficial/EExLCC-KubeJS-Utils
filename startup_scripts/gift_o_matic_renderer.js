@@ -19,7 +19,8 @@
   function display(be, partial) {
     var level = be.getLevel()
     var state = be.data.getCompound('lccGiftOMatic')
-    var time = Number(level.getGameTime()) + Number(partial)
+    // LevelMixin remaps getGameTime to getTime for scripts.
+    var time = Number(level.getTime()) + Number(partial)
     var index = 0
     var list
     var pool
@@ -67,29 +68,41 @@
   ClientEvents.blockEntityRendererRegistry(function (event) {
     var type = Registries.BLOCK_ENTITY_TYPE.get(Location.parse('kubejs:gift_o_matic'))
     event.register(type, function (context) {
+      var renderFailed = false
+      function draw(be, partial, pose, buffers, light) {
+        var shown = display(be, partial)
+        if (shown == null || shown.stack.isEmpty()) return
+        var fake = cache.get(be)
+        if (fake == null) {
+          fake = new ItemEntity(EntityType.ITEM, be.getLevel())
+          cache.put(be, fake)
+        }
+        // One item visual even when the configured reward is a full stack.
+        fake.setItem(shown.stack.copyWithCount(1))
+        pose.pushPose()
+        try {
+          pose.translate(0.5, shown.y, 0.5)
+          pose.mulPose(Axis.YP.rotationDegrees(((Number(be.getLevel().getTime()) + Number(partial)) * 3) % 360))
+          // Draw only the item renderer, without world shadows/debug hitboxes
+          // that assume the entity has actually been spawned at a world pos.
+          Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(fake)
+            // The unspawned entity has no age. Keep its own partial tick at
+            // zero; the pose above supplies continuous world-time rotation.
+            .render(fake, 0, 0, pose, buffers, light)
+        } finally {
+          pose.popPose()
+        }
+      }
       return new JavaAdapter(Renderer, {
         render: function (be, partial, pose, buffers, light, overlay) {
-          var shown = display(be, partial)
-          if (shown == null || shown.stack.isEmpty()) return
-          var fake = cache.get(be)
-          if (fake == null) {
-            fake = new ItemEntity(EntityType.ITEM, be.getLevel())
-            cache.put(be, fake)
-          }
-          // One item visual even when the configured reward is a full stack.
-          fake.setItem(shown.stack.copyWithCount(1))
-          pose.pushPose()
+          if (renderFailed) return
           try {
-            pose.translate(0.5, shown.y, 0.5)
-            pose.mulPose(Axis.YP.rotationDegrees(((Number(be.getLevel().getGameTime()) + Number(partial)) * 3) % 360))
-            // Draw only the item renderer, without world shadows/debug hitboxes
-            // that assume the entity has actually been spawned at a world pos.
-            Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(fake)
-              // The unspawned entity has no age. Keep its own partial tick at
-              // zero; the pose above supplies continuous world-time rotation.
-              .render(fake, 0, 0, pose, buffers, light)
-          } finally {
-            pose.popPose()
+            draw(be, partial, pose, buffers, light)
+          } catch (error) {
+            // Unlike KubeJS event listeners, JavaAdapter render calls have no
+            // script error guard. Fail the display once, not the entire world.
+            renderFailed = true
+            console.error('[gift_o_matic] Item display disabled after renderer error: ' + String(error))
           }
         },
         // The base can be outside the camera while the upper glass is visible.

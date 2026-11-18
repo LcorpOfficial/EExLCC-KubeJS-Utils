@@ -112,7 +112,7 @@
 
     function valid(who) {
       return permitted(who) && !be.isRemoved() && who.level === level &&
-        who.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64 &&
+        who.getDistanceSq(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64 &&
         hasTop(be) && !data(be).contains('active', 10)
     }
     function refresh() {
@@ -173,7 +173,7 @@
         clicked: function (slot, button, click, who) {
           slot = Number(slot)
           button = Number(button)
-          if (!valid(who)) { who.closeContainer(); return }
+          if (!valid(who)) { who.closeMenu(); return }
           // Reject drag, number keys, shift, clone, throw, and double-click.
           // Never call super.clicked: client predictions are corrected below.
           if (click === ClickType.PICKUP && (button === 0 || button === 1)) {
@@ -190,9 +190,9 @@
             } else if (slot === 45) {
               brush = Stack.EMPTY
             } else if (slot === 49) {
-              if (save()) { who.closeContainer(); return }
+              if (save()) { who.closeMenu(); return }
             } else if (slot === 51) {
-              who.closeContainer(); return
+              who.closeMenu(); return
             } else if (slot === 53) {
               draft[selected] = new Tag()
             }
@@ -285,7 +285,7 @@
     if (prize.isEmpty()) return
     var active = new Tag()
     active.putString('owner', owner(player))
-    active.putLong('started', event.level.getGameTime())
+    active.putLong('started', event.level.getTime())
     active.put('prize', write(event.level, prize))
     active.put('previews', entries.copy())
     active.putBoolean('delivered', false)
@@ -309,7 +309,7 @@
     var state = data(be)
     if (!state.contains('active', 10)) return
     var active = state.getCompound('active')
-    var now = Number(event.level.getGameTime())
+    var now = Number(event.level.getTime())
     var elapsed = now - active.getLong('started')
     if (!active.getBoolean('delivered')) {
       if (elapsed < 40 && elapsed % 2 === 0) {
