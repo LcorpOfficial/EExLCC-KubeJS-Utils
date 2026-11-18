@@ -104,7 +104,9 @@
     }
     var selected = 0
     var brush = Stack.EMPTY
-    var ghost = new Container(54)
+    // SimpleContainer also has ItemStack... constructors. KubeJS's ItemStack
+    // wrapper makes Rhino try that overload for a numeric JS argument.
+    var ghost = new Container['(int)'](54)
     var menu = null
     var session = String(UUID.randomUUID())
 
