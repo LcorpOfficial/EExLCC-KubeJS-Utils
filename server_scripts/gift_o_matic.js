@@ -109,11 +109,33 @@
     var ghost = new Container['(int)'](54)
     var menu = null
     var session = String(UUID.randomUUID())
+    var menuFailed = false
+
+    function failMenu(error) {
+      if (!menuFailed) console.error('[gift_o_matic] Configuration menu closed after error: ' + String(error))
+      menuFailed = true
+    }
+    function close(who) {
+      try { who.closeMenu() } catch (error) { failMenu(error) }
+    }
 
     function valid(who) {
-      return permitted(who) && !be.isRemoved() && who.level === level &&
-        who.getDistanceSq(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64 &&
-        hasTop(be) && !data(be).contains('active', 10)
+      if (menuFailed) return false
+      try {
+        if (!permitted(who) || be.isRemoved() || who.level !== level) return false
+        // EntityKJS's BlockPos-only helper shadows the mapped vanilla
+        // three-coordinate distance method. Use the unmapped position getters.
+        var dx = Number(who.getX()) - (Number(pos.getX()) + 0.5)
+        var dy = Number(who.getY()) - (Number(pos.getY()) + 0.5)
+        var dz = Number(who.getZ()) - (Number(pos.getZ()) + 0.5)
+        return dx * dx + dy * dy + dz * dz <= 64 &&
+          hasTop(be) && !data(be).contains('active', 10)
+      } catch (error) {
+        // stillValid is called directly from ServerPlayer.tick, outside the
+        // KubeJS event error guard. Returning false lets vanilla close safely.
+        failMenu(error)
+        return false
+      }
     }
     function refresh() {
       for (var slot = 0; slot < 54; slot++) ghost.setItem(slot, Stack.EMPTY)
@@ -165,48 +187,54 @@
       sync(be)
       return true
     }
+    function handleClick(slot, button, click, who) {
+      slot = Number(slot)
+      button = Number(button)
+      if (!valid(who)) { close(who); return }
+      // Reject drag, number keys, shift, clone, throw, and double-click.
+      // Never call super.clicked: client predictions are corrected below.
+      if (click === ClickType.PICKUP && (button === 0 || button === 1)) {
+        if (slot >= 54 && slot < 90) {
+          brush = menu.getSlot(slot).getItem().copy()
+        } else if (slot >= 0 && slot < 9) {
+          selected = slot
+          if (button === 1 && !brush.isEmpty()) draft[slot].put('cost', write(level, brush))
+        } else if (slot >= 9 && slot < 45) {
+          var entries = rewards(draft[selected])
+          while (entries.size() < 36) entries.add(new Tag())
+          entries.set(slot - 9, button === 1 ? new Tag() : write(level, brush))
+          draft[selected].put('rewards', entries)
+        } else if (slot === 45) {
+          brush = Stack.EMPTY
+        } else if (slot === 49) {
+          if (save()) { close(who); return }
+        } else if (slot === 51) {
+          close(who); return
+        } else if (slot === 53) {
+          draft[selected] = new Tag()
+        }
+      }
+      refresh()
+    }
     refresh()
     var provider = new Provider(function (id, inventory, who) {
       menu = new JavaAdapter(ChestMenu, {
         stillValid: function (who) { return valid(who) },
         quickMoveStack: function (who, slot) { return Stack.EMPTY },
         clicked: function (slot, button, click, who) {
-          slot = Number(slot)
-          button = Number(button)
-          if (!valid(who)) { who.closeMenu(); return }
-          // Reject drag, number keys, shift, clone, throw, and double-click.
-          // Never call super.clicked: client predictions are corrected below.
-          if (click === ClickType.PICKUP && (button === 0 || button === 1)) {
-            if (slot >= 54 && slot < 90) {
-              brush = menu.getSlot(slot).getItem().copy()
-            } else if (slot >= 0 && slot < 9) {
-              selected = slot
-              if (button === 1 && !brush.isEmpty()) draft[slot].put('cost', write(level, brush))
-            } else if (slot >= 9 && slot < 45) {
-              var entries = rewards(draft[selected])
-              while (entries.size() < 36) entries.add(new Tag())
-              entries.set(slot - 9, button === 1 ? new Tag() : write(level, brush))
-              draft[selected].put('rewards', entries)
-            } else if (slot === 45) {
-              brush = Stack.EMPTY
-            } else if (slot === 49) {
-              if (save()) { who.closeMenu(); return }
-            } else if (slot === 51) {
-              who.closeMenu(); return
-            } else if (slot === 53) {
-              draft[selected] = new Tag()
-            }
-          }
-          refresh()
+          try { handleClick(slot, button, click, who) }
+          catch (error) { failMenu(error); close(who) }
         },
         removed: function (who) {
-          // No real carried stack can be created by this menu. Clearing the
-          // ghost container before vanilla cleanup also prevents ghost drops.
-          ghost.clearContent()
-          if (String(data(be).getCompound('editor').getString('session')) === session) {
-            data(be).remove('editor')
-            be.save()
-          }
+          try {
+            // No real carried stack can be created by this menu. Clearing the
+            // ghost container before vanilla cleanup also prevents ghost drops.
+            ghost.clearContent()
+            if (String(data(be).getCompound('editor').getString('session')) === session) {
+              data(be).remove('editor')
+              be.save()
+            }
+          } catch (error) { failMenu(error) }
         }
       }, MenuType.GENERIC_9x6, id, inventory, ghost, 6)
       var lock = new Tag()
