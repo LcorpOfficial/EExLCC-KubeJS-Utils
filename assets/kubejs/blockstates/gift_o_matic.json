@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "kubejs:block/gift_o_matic"
+    },
+    "facing=east": {
+      "model": "kubejs:block/gift_o_matic",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "kubejs:block/gift_o_matic",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "kubejs:block/gift_o_matic",
+      "y": 270
+    }
+  }
+}

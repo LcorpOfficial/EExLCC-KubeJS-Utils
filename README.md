@@ -83,6 +83,44 @@ looking at a placed trophy.
 | Dense Apricorns (`kubejs:<color>_apricorn_dense`) | Combine nine same-color Apricorns into a storage block; craft it back into nine Apricorns. |
 | Glyphed Blocks (`kubejs:<glyph>_glyphed_<material>`) | Stonecut sandstone, red sandstone, or end stone into decorative Unown blocks. Glyphs are `a`–`z` or `blank`. |
 
+### Gift-o-Matic Machine
+
+Obtain with `/give @s kubejs:gift_o_matic`. It is unbreakable in survival,
+resists explosions and pistons, and requires air directly above it, like the
+Pokémon Statue. Only the lower half accepts interactions. Creative players can
+remove either half when the machine is idle; both halves are removed together.
+
+An operator in creative can crouch-right-click the lower half to configure up
+to nine pools, each with up to 36 reward entries:
+
+1. Click a stack in your inventory to select a template. Its count and all item
+   components are copied; your original stack stays in your inventory.
+2. Right-click a slot in the top row to assign the selected stack as that pool's
+   currency and cost. Left-click a top-row slot to select an existing pool.
+3. Left-click slots in rows 2–5 to copy reward templates into the selected pool.
+   Right-click a reward slot to clear it. Click another inventory stack to
+   change the selected template.
+4. The green button saves all pools. The door or Escape cancels edits. The red
+   button deletes the selected pool in the draft; save to apply the deletion.
+
+Every nonempty pool needs a distinct currency item/components and at least one
+reward. Each occupied reward slot has equal probability; duplicate entries can
+weight a reward. Reward counts are the stack size given per redemption, and
+reward templates are unlimited. Costs come from the stack in the interacting
+hand, including its count and components, and are consumed in creative too.
+
+Each viewer sees the display cycle through currencies until they hold a matching
+currency in either hand, then it previews that pool's rewards. Redeeming locks
+the machine for the two-second spin, prize reveal, descent, and one-second reset.
+Rewards enter the redeeming player's inventory; overflow drops at that player.
+If they disconnect before delivery, the prize stays saved and the machine waits
+for them to reconnect. Configuration and pending prizes are stored in the lower
+block's `data.lccGiftOMatic` NBT. Configuration also locks the machine until the
+editor saves or closes the menu.
+
+Restart the server and clients to register the blocks. Clients need the new
+startup script, client script, and assets for the model and local item display.
+
 ### Lumisene Furnace
 
 Fill `kubejs:lumisene_furnace` with Lumisene by right-clicking with a fluid

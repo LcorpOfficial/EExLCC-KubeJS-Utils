@@ -1,0 +1,41 @@
+// MC 1.21.1 / KubeJS 2101.7.2. Keep client classes in client_scripts.
+StartupEvents.registry('block', function (event) {
+  var base = event.create('gift_o_matic')
+    .displayName('Gift-o-Matic Machine')
+    .soundType('metal')
+    .unbreakable()
+    .resistance(3600000)
+    .noDrops()
+    .notSolid()
+    .defaultTranslucent()
+    .box(0, 0, 0, 16, 6, 16)
+    .box(1, 6, 1, 15, 16, 15)
+    .box(4, 7, 0, 12, 16, 1)
+    .property(BlockProperties.HORIZONTAL_FACING)
+    .defaultState(function (state) { state.setValue(BlockProperties.HORIZONTAL_FACING, Direction.NORTH) })
+    .placementState(function (state) { state.setValue(BlockProperties.HORIZONTAL_FACING, state.horizontalDirection.opposite) })
+    .blockEntity(function (info) {
+      info.serverTicking()
+      info.tickFrequency(1)
+      info.enableSync()
+    })
+
+  var top = event.create('gift_o_matic_top')
+    .displayName('Gift-o-Matic Machine (Top)')
+    .noItem()
+    .soundType('glass')
+    .unbreakable()
+    .resistance(3600000)
+    .noDrops()
+    .notSolid()
+    .defaultTranslucent()
+    .box(0, 0, 0, 16, 16, 16)
+    .property(BlockProperties.HORIZONTAL_FACING)
+    .defaultState(function (state) { state.setValue(BlockProperties.HORIZONTAL_FACING, Direction.NORTH) })
+
+  // These blocks must not be moved independently or destroyed by bosses.
+  ;[base, top].forEach(function (block) {
+    block.tagBlock('minecraft:dragon_immune')
+    block.tagBlock('minecraft:wither_immune')
+  })
+})
