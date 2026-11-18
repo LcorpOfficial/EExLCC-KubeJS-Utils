@@ -4,6 +4,10 @@
   // This ClientEvents event is STARTUP-only in KubeJS 2101.7.2. Guard before
   // loading any client classes so dedicated servers can load this file too.
   if (!Platform.isClientEnvironment()) return
+  // Model pixels are 1/16 block. Lower the glass display by 1.5 pixels while
+  // keeping the final ejection position in the lower block unchanged.
+  var DISPLAY_Y = 1.40 - 1.5 / 16
+  var EJECT_Y = 0.30
   var Registries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
   var Location = Java.loadClass('net.minecraft.resources.ResourceLocation')
   var Renderer = Java.loadClass('net.minecraft.client.renderer.blockentity.BlockEntityRenderer')
@@ -29,17 +33,23 @@
     var elapsed
     if (state.contains('active', 10)) {
       var active = state.getCompound('active')
-      if (active.getBoolean('delivered')) return null
-      elapsed = Math.max(0, time - active.getLong('started'))
-      if (elapsed < 40) {
-        list = active.getList('previews', 10)
-        if (list.isEmpty()) return null
-        index = Math.floor(elapsed / 2) % list.size()
-        return { stack: read(level, list.getCompound(index)), y: 1.40 }
-      }
-      return {
-        stack: read(level, active.getCompound('prize')),
-        y: 1.40 - 1.10 * Math.max(0, Math.min(1, (elapsed - 48) / 12))
+      if (active.getBoolean('delivered')) {
+        // Return the idle display from the already-synced timestamp. The
+        // server keeps the transaction locked briefly AFTER this return,
+        // rather than sharing a packet for both reappearance and unlocking.
+        if (time < Number(active.getLong('resetAt'))) return null
+      } else {
+        elapsed = Math.max(0, time - active.getLong('started'))
+        if (elapsed < 40) {
+          list = active.getList('previews', 10)
+          if (list.isEmpty()) return null
+          index = Math.floor(elapsed / 2) % list.size()
+          return { stack: read(level, list.getCompound(index)), y: DISPLAY_Y }
+        }
+        return {
+          stack: read(level, active.getCompound('prize')),
+          y: DISPLAY_Y + (EJECT_Y - DISPLAY_Y) * Math.max(0, Math.min(1, (elapsed - 48) / 12))
+        }
       }
     }
     list = state.getList('pools', 10)
@@ -56,13 +66,13 @@
             var entries = pool.getList('rewards', 10)
             if (entries.isEmpty()) return null
             index = Math.floor(time / 20) % entries.size()
-            return { stack: read(level, entries.getCompound(index)), y: 1.40 }
+            return { stack: read(level, entries.getCompound(index)), y: DISPLAY_Y }
           }
         }
       }
     }
     index = Math.floor(time / 20) % list.size()
-    return { stack: read(level, list.getCompound(index).getCompound('cost')), y: 1.40 }
+    return { stack: read(level, list.getCompound(index).getCompound('cost')), y: DISPLAY_Y }
   }
 
   ClientEvents.blockEntityRendererRegistry(function (event) {

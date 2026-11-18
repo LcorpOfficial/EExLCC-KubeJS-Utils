@@ -17,6 +17,8 @@
   var Provider = Java.loadClass('net.minecraft.world.SimpleMenuProvider')
   var Components = Java.loadClass('net.minecraft.core.component.DataComponents')
   var Component = Java.loadClass('net.minecraft.network.chat.Component')
+  var ItemLore = Java.loadClass('net.minecraft.world.item.component.ItemLore')
+  var ArrayList = Java.loadClass('java.util.ArrayList')
   var Sounds = Java.loadClass('net.minecraft.sounds.SoundEvents')
   var Source = Java.loadClass('net.minecraft.sounds.SoundSource')
 
@@ -88,9 +90,14 @@
     return null
   }
 
-  function icon(id, name) {
+  function icon(id, name, helpLines) {
     var stack = Item.of(id)
     stack.set(Components.CUSTOM_NAME, Component.literal(name))
+    if (helpLines != null) {
+      var lines = new ArrayList()
+      for (var i = 0; i < helpLines.length; i++) lines.add(Text.gray(helpLines[i]))
+      stack.set(Components.LORE, new ItemLore(lines))
+    }
     return stack
   }
 
@@ -110,6 +117,24 @@
     var menu = null
     var session = String(UUID.randomUUID())
     var menuFailed = false
+    var helpBook = icon('minecraft:book', 'How to use', [
+      '1. Click an item in your inventory.',
+      '   Its stack size sets the amount.',
+      '   Your original items stay with you.',
+      '',
+      '2. Right-click a top slot to set the cost.',
+      '   Left-click a top slot to choose a pool.',
+      '',
+      '3. Click the middle slots to add prizes.',
+      '   Right-click a prize to remove it.',
+      '   Repeat a prize to improve its odds.',
+      '',
+      'Green check: save everything.',
+      'Gray X or Esc: leave without saving.',
+      'Left red X: clear your selected item.',
+      'Right red X: delete the current pool.',
+      'Save to keep the deletion.'
+    ])
 
     function failMenu(error) {
       if (!menuFailed) console.error('[gift_o_matic] Configuration menu closed after error: ' + String(error))
@@ -145,13 +170,14 @@
       }
       var entries = rewards(draft[selected])
       for (var r = 0; r < Math.min(36, entries.size()); r++) ghost.setItem(9 + r, read(level, entries.getCompound(r)))
-      ghost.setItem(45, icon('kubejs:tutor_ui_cancel', 'Clear selection / right-click reward to erase'))
-      ghost.setItem(46, icon('kubejs:tutor_ui_category', 'Pool ' + (selected + 1) + ': top row selects; right-click sets cost'))
-      ghost.setItem(47, brush.isEmpty() ? icon('kubejs:tutor_ui_search', 'Click your inventory to select a template') : brush.copy())
-      ghost.setItem(49, icon('kubejs:tutor_ui_confirm', 'Save all pools and close'))
-      ghost.setItem(50, icon('minecraft:book', 'Rows 2-5: left-click copies selected stack; right-click clears'))
-      ghost.setItem(51, icon('kubejs:tutor_ui_close', 'Cancel without saving'))
-      ghost.setItem(53, icon('kubejs:tutor_ui_cancel', 'Delete selected pool (save to confirm)'))
+      for (var bottom = 45; bottom < 54; bottom++) ghost.setItem(bottom, icon('kubejs:tutor_ui_filler', ' '))
+      ghost.setItem(45, icon('kubejs:tutor_ui_cancel', 'Clear selected item'))
+      ghost.setItem(46, icon('kubejs:tutor_ui_category', 'Pool ' + (selected + 1)))
+      ghost.setItem(47, brush.isEmpty() ? Stack.EMPTY : brush.copy())
+      ghost.setItem(49, icon('kubejs:tutor_ui_confirm', 'Save everything'))
+      ghost.setItem(50, helpBook)
+      ghost.setItem(51, icon('kubejs:tutor_ui_close', 'Leave without saving'))
+      ghost.setItem(53, icon('kubejs:tutor_ui_cancel', 'Delete pool ' + (selected + 1)))
       if (menu != null) menu.sendAllDataToRemote()
     }
     function save() {
@@ -167,12 +193,12 @@
         }
         if (cost.isEmpty() && cleaned.isEmpty()) continue
         if (cost.isEmpty() || cleaned.isEmpty()) {
-          player.tell(Text.red('Pool ' + (p + 1) + ' needs a currency and at least one reward.'))
+          player.tell(Text.red('Pool ' + (p + 1) + ' needs a payment item and at least one prize.'))
           return false
         }
         for (var s = 0; s < seen.length; s++) {
           if (Stack.isSameItemSameComponents(cost, seen[s])) {
-            player.tell(Text.red('Each pool must use a different currency item/components.'))
+            player.tell(Text.red('Each pool needs a different payment item.'))
             return false
           }
         }
@@ -246,7 +272,6 @@
       return menu
     }, Component.literal('Gift-o-Matic Setup'))
     player.openMenu(provider)
-    player.tell(Text.gray('Click inventory to select a stack. Top row: left selects pool, right sets its cost. Middle rows: left copies reward, right clears. Green checkmark saves; gray X cancels.'))
   }
 
   BlockEvents.placed(BASE, function (event) {
@@ -354,7 +379,10 @@
       active.putLong('resetAt', now + 20)
       sync(be)
       sound(event.level, be.getBlockPos(), Sounds.VAULT_EJECT_ITEM, 1)
-    } else if (now >= active.getLong('resetAt')) {
+    } else if (now >= Number(active.getLong('resetAt')) + 5) {
+      // Clients restore the display at resetAt using the timestamp already
+      // sent on delivery. Keep payments blocked for another 5 ticks (0.25 s)
+      // so a new spin cannot start before that restored display is visible.
       state.remove('active')
       sync(be)
     }

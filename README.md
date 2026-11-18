@@ -91,7 +91,12 @@ Pokémon Statue. Only the lower half accepts interactions. Creative players can
 remove either half when the machine is idle; both halves are removed together.
 
 An operator in creative can crouch-right-click the lower half to configure up
-to nine pools, each with up to 36 reward entries:
+to nine pools, each with up to 36 reward entries. Hover over the book for all
+setup instructions; opening the menu does not post instructions in chat.
+Unused bottom-row slots use blank icons, and the selected-item slot stays empty
+until you choose an item.
+
+To configure a pool:
 
 1. Click a stack in your inventory to select a template. Its count and all item
    components are copied; your original stack stays in your inventory.
@@ -113,6 +118,7 @@ hand, including its count and components, and are consumed in creative too.
 Each viewer sees the display cycle through currencies until they hold a matching
 currency in either hand, then it previews that pool's rewards. Redeeming locks
 the machine for the two-second spin, prize reveal, descent, and one-second reset.
+Payments remain blocked for another quarter-second after the display returns.
 Rewards enter the redeeming player's inventory; overflow drops at that player.
 If they disconnect before delivery, the prize stays saved and the machine waits
 for them to reconnect. Configuration and pending prizes are stored in the lower
