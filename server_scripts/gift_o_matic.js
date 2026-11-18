@@ -141,17 +141,17 @@
       for (var slot = 0; slot < 54; slot++) ghost.setItem(slot, Stack.EMPTY)
       for (var p = 0; p < 9; p++) {
         var cost = read(level, draft[p].getCompound('cost'))
-        ghost.setItem(p, cost.isEmpty() ? icon('minecraft:gray_stained_glass_pane', 'Empty pool ' + (p + 1)) : cost)
+        ghost.setItem(p, cost.isEmpty() ? icon('kubejs:tutor_ui_filler', 'Empty pool ' + (p + 1)) : cost)
       }
       var entries = rewards(draft[selected])
       for (var r = 0; r < Math.min(36, entries.size()); r++) ghost.setItem(9 + r, read(level, entries.getCompound(r)))
-      ghost.setItem(45, icon('minecraft:barrier', 'Clear selection / right-click reward to erase'))
-      ghost.setItem(46, icon('minecraft:paper', 'Pool ' + (selected + 1) + ': top row selects; right-click sets cost'))
-      ghost.setItem(47, brush.isEmpty() ? icon('minecraft:paper', 'Click your inventory to select a template') : brush.copy())
-      ghost.setItem(49, icon('minecraft:lime_concrete', 'Save all pools and close'))
+      ghost.setItem(45, icon('kubejs:tutor_ui_cancel', 'Clear selection / right-click reward to erase'))
+      ghost.setItem(46, icon('kubejs:tutor_ui_category', 'Pool ' + (selected + 1) + ': top row selects; right-click sets cost'))
+      ghost.setItem(47, brush.isEmpty() ? icon('kubejs:tutor_ui_search', 'Click your inventory to select a template') : brush.copy())
+      ghost.setItem(49, icon('kubejs:tutor_ui_confirm', 'Save all pools and close'))
       ghost.setItem(50, icon('minecraft:book', 'Rows 2-5: left-click copies selected stack; right-click clears'))
-      ghost.setItem(51, icon('minecraft:oak_door', 'Cancel without saving'))
-      ghost.setItem(53, icon('minecraft:red_concrete', 'Delete selected pool (save to confirm)'))
+      ghost.setItem(51, icon('kubejs:tutor_ui_close', 'Cancel without saving'))
+      ghost.setItem(53, icon('kubejs:tutor_ui_cancel', 'Delete selected pool (save to confirm)'))
       if (menu != null) menu.sendAllDataToRemote()
     }
     function save() {
@@ -246,7 +246,7 @@
       return menu
     }, Component.literal('Gift-o-Matic Setup'))
     player.openMenu(provider)
-    player.tell(Text.gray('Click inventory to select a stack. Top row: left selects pool, right sets its cost. Middle rows: left copies reward, right clears. Green saves; door cancels.'))
+    player.tell(Text.gray('Click inventory to select a stack. Top row: left selects pool, right sets its cost. Middle rows: left copies reward, right clears. Green checkmark saves; gray X cancels.'))
   }
 
   BlockEvents.placed(BASE, function (event) {

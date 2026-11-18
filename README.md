@@ -100,8 +100,9 @@ to nine pools, each with up to 36 reward entries:
 3. Left-click slots in rows 2–5 to copy reward templates into the selected pool.
    Right-click a reward slot to clear it. Click another inventory stack to
    change the selected template.
-4. The green button saves all pools. The door or Escape cancels edits. The red
-   button deletes the selected pool in the draft; save to apply the deletion.
+4. The green checkmark saves all pools. The gray X or Escape cancels edits. The
+   red X on the far right deletes the selected pool in the draft; save to apply
+   the deletion. These controls reuse the Data Manipulator's UI icons.
 
 Every nonempty pool needs a distinct currency item/components and at least one
 reward. Each occupied reward slot has equal probability; duplicate entries can
