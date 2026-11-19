@@ -22,6 +22,7 @@
   var SoundSource = Java.loadClass('net.minecraft.sounds.SoundSource')
   var Registries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
   var ParticlePacket = Java.loadClass('com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticlePacket')
+  var PokeBalls = Java.loadClass('com.cobblemon.mod.common.api.pokeball.PokeBalls')
   var PROJECTILE_KEY = 'lccPokeLureProjectile'
   global.lccPokeLures.configure = null
   global.lccPokeLures.roll = null
@@ -50,6 +51,9 @@
   function validatePerfectIVs(value) {
     if (value != null && (!Number.isInteger(value) || value < 0 || value > 6)) fail('min_perfect_ivs must be null or an integer from 0 to 6')
   }
+  function validateSendOutBall(value) {
+    if (value != null && (typeof value !== 'string' || !/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(value))) fail('send_out_ball must be a namespaced Poke Ball identifier')
+  }
   function modifiers(list) {
     array(list || [], 'modifiers').forEach(function (modifier) {
       if (!modifier || typeof modifier.id !== 'string' || !modifier.id) fail('Each modifier needs an id')
@@ -71,6 +75,7 @@
     if (!result || !text(result.pokemon, 'entry.pokemon')) fail('Each entry needs a Pokémon property string')
     weight(result.weight, result.pokemon)
     validatePerfectIVs(result.min_perfect_ivs)
+    validateSendOutBall(result.send_out_ball)
     modifiers(result.modifiers || [])
     validateMarks(result.marks || [])
     return result
@@ -95,6 +100,7 @@
         entries.forEach(entry)
         text(tier.properties, 'tier.properties')
         validatePerfectIVs(tier.min_perfect_ivs)
+        validateSendOutBall(tier.send_out_ball)
         modifiers(tier.modifiers || [])
         validateMarks(tier.marks || [])
       })
@@ -104,11 +110,12 @@
   function validateOverride(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) fail('Lure settings must be a JSON object')
     Object.keys(value).forEach(function (key) {
-      if (['pool', 'properties', 'modifiers', 'marks', 'min_perfect_ivs'].indexOf(key) < 0) fail('Unknown lure setting: ' + key)
+      if (['pool', 'properties', 'modifiers', 'marks', 'min_perfect_ivs', 'send_out_ball'].indexOf(key) < 0) fail('Unknown lure setting: ' + key)
     })
     if (value.pool != null) validatePool(value.pool)
     text(value.properties, 'properties')
     validatePerfectIVs(value.min_perfect_ivs)
+    validateSendOutBall(value.send_out_ball)
     modifiers(value.modifiers || [])
     validateMarks(value.marks || [])
     return value
@@ -119,6 +126,7 @@
   Object.keys(config.pools).forEach(function (name) { validatePool(config.pools[name]) })
   var defaults = config.defaults || {}
   validatePerfectIVs(defaults.min_perfect_ivs)
+  validateSendOutBall(defaults.send_out_ball)
   var levelSettings = defaults.level || { partyScale: 0.8, minimum: 25, variation: 4 }
   if (!isFinite(levelSettings.partyScale) || levelSettings.partyScale <= 0 ||
       !Number.isInteger(levelSettings.minimum) || !Number.isInteger(levelSettings.variation) ||
@@ -130,6 +138,7 @@
     validatePool(definition.pool)
     text(definition.properties, 'item.properties')
     validatePerfectIVs(definition.min_perfect_ivs)
+    validateSendOutBall(definition.send_out_ball)
     modifiers(definition.modifiers || [])
     validateMarks(definition.marks || [])
     definitions[definition.id] = definition
@@ -262,11 +271,14 @@
     // An omitted field inherits; null or zero disables the inherited guarantee.
     // This is a fixed minimum, so it does not consume a modifier chance roll.
     var perfectIVs = null
+    var sendOutBall = 'cobblemon:ancient_origin_ball'
     ;[defaults, definition, tier, selected, override].forEach(function (layer) {
       if (Object.prototype.hasOwnProperty.call(layer, 'min_perfect_ivs')) perfectIVs = layer.min_perfect_ivs
+      if (layer.send_out_ball != null) sendOutBall = layer.send_out_ball
     })
     if (perfectIVs > 0) parts.push('min_perfect_ivs=' + perfectIVs)
-    return { properties: normalizedProperties(parts), marks: marks, tier: tier.name || null }
+    if (PokeBalls.getPokeBall(Location.parse(sendOutBall)) == null) fail('Unknown send_out_ball: ' + sendOutBall)
+    return { properties: normalizedProperties(parts), marks: marks, tier: tier.name || null, sendOutBall: sendOutBall }
   }
 
   function positionEntity(entity, anchor, level) {
@@ -301,11 +313,16 @@
     try { action() }
     catch (error) { console.error('[poke_lures] ' + label + ' failed: ' + String(error)) }
   }
-  function effects(level, anchor) {
+  function effects(level, anchor, sendOutBall) {
     var x = Number(anchor.x), y = Number(anchor.y), z = Number(anchor.z)
+    // Match native send-out naming: underscores removed from the ball's path.
+    var ballPath = (sendOutBall || 'cobblemon:ancient_origin_ball').split(':')[1].replace(/_/g, '')
+    var particles = ['cobblemon:evo_bigsparkle', 'cobblemon:evo_flyingsparkles',
+      'cobblemon:' + ballPath + '/casual/ballsparks', 'cobblemon:' + ballPath + '/casual/ballsendsparkle']
     // Use the same positional packet as /bedrockparticle, without running a
     // permission-gated command as a projectile. It survives projectile removal.
-    ;['cobblemon:evo_bigsparkle', 'cobblemon:evo_flyingsparkles'].forEach(function (id) {
+    // These send-out emitters are one-shot; the native sendflash emitter loops.
+    particles.forEach(function (id) {
       feedback('Impact particle ' + id, function () {
         var packet = new ParticlePacket(Location.parse(id), anchor)
         var viewers = level.getServer().getPlayerList().getPlayers().iterator()
@@ -322,7 +339,7 @@
     ;[['cobblemon:poke_ball.break', 0.6], ['cobblemon:block.campfire_pot.open', 2],
       ['cobblemon:block.fossil_machine.finished', 2]].forEach(function (sound) {
       feedback('Impact sound ' + sound[0], function () {
-        level.playSound(null, x, y, z, Registries.SOUND_EVENT.get(Location.parse(sound[0])), SoundSource.NEUTRAL, 1, sound[1])
+        level.playSound(null, x, y, z, Registries.SOUND_EVENT.get(Location.parse(sound[0])), SoundSource.AMBIENT, 1, sound[1])
       })
     })
   }
@@ -410,7 +427,7 @@
       })
       // Send the opening effects at the actual collision point before the
       // spawn packet, even when the Pokemon needs a nearby clear position.
-      effects(level, anchor)
+      effects(level, anchor, rolled.sendOutBall)
       if (!level.addFreshEntity(entity)) fail('The Pokémon spawn was cancelled')
       committed = true
       // Award only after the Pokemon was actually added to the world. Neither

@@ -14,12 +14,27 @@ is required. It spawns one wild Pokémon where it hits a block or entity, moving
 slightly from the exact hit point only if needed to fit the Pokémon. Lure impacts
 deal no snowball damage. A ten-tick cooldown prevents overlapping throws.
 
-On a valid impact, the original evolution sparkle effects and three opening
-sounds play at the exact hit coordinates before the Pokémon is added to the
+On a valid impact, the original evolution sparkle effects, ball send-out
+sparkles, and three opening sounds play at the exact hit coordinates before the Pokémon is added to the
 world. Bedrock effects use Cobblemon's positional packets for nearby viewers in
 the same dimension. They require no player command permissions and remain at
 the impact point if the Pokémon needs a nearby clear space. Each effect is
 guarded independently so a feedback failure cannot cancel the spawn.
+The sounds retain the original Ambient channel, volume, and pitches.
+
+`send_out_ball` chooses the ball send-out effect using a native ball ID. It
+defaults to `"cobblemon:ancient_origin_ball"`; Spooky uses
+`"cobblemon:dusk_ball"` and Festive uses `"cobblemon:friend_ball"`. Configure it
+on defaults or an item in `poke_lures.json`, or on a held stack:
+
+```text
+/pokelure configure {"send_out_ball":"cobblemon:friend_ball"}
+```
+
+Tiers and entries can override it too, in the same order as `min_perfect_ivs`.
+The ball choice is saved at throw time and only changes the visual effect.
+The native one-shot send-out spark and sparkle emitters are used, so the burst
+ends by itself. Existing in-flight lures without the setting use Ancient Origin.
 
 The roll and full item settings are saved on the projectile at throw time, so
 changing hands, editing the remaining stack, or reloading scripts while it is
@@ -182,7 +197,8 @@ For a custom held stack, for example:
 
 The settings affect every item in that stack. Hold a single item first to edit
 only one lure. `{}` restores the item's default spawn settings. Supported keys
-are `pool`, `properties`, `modifiers`, `marks`, and `min_perfect_ivs`. `pool` may be a config name
+are `pool`, `properties`, `modifiers`, `marks`, `min_perfect_ivs`, and
+`send_out_ball`. `pool` may be a config name
 or an inline flat/structured pool. Settings are saved as a JSON string in
 `minecraft:custom_data.lccPokeLure.config`, so different settings do not stack
 together. Item names/tooltips remain those of the configured native variant.

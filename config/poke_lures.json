@@ -4,6 +4,7 @@
     "level": { "partyScale": 0.8, "minimum": 25, "variation": 4 },
     "properties": "",
     "min_perfect_ivs": null,
+    "send_out_ball": "cobblemon:ancient_origin_ball",
     "modifiers": [
       { "id": "alpha", "chance": 0.15, "properties": "alpha=true", "otherwise": "alpha=false" },
       { "id": "shiny", "chance": 0.15, "properties": "shiny=true", "otherwise": "shiny=false" },
@@ -22,6 +23,7 @@
     {
       "id": "kubejs:spooky_poke_lure",
       "pool": "spooky",
+      "send_out_ball": "cobblemon:dusk_ball",
       "min_perfect_ivs": 3,
       "modifiers": [
         { "id": "alpha", "chance": 0.15, "properties": "alpha=true", "otherwise": "alpha=false" },
@@ -31,6 +33,7 @@
     {
       "id": "kubejs:festive_poke_lure",
       "pool": "festive",
+      "send_out_ball": "cobblemon:friend_ball",
       "min_perfect_ivs": 3,
       "modifiers": [
         { "id": "alpha", "chance": 0.15, "properties": "alpha=true", "otherwise": "alpha=false" },

@@ -4,9 +4,9 @@
   // This ClientEvents event is STARTUP-only in KubeJS 2101.7.2. Guard before
   // loading any client classes so dedicated servers can load this file too.
   if (!Platform.isClientEnvironment()) return
-  // Model pixels are 1/16 block. Lower the glass display by 1.5 pixels while
+  // Model pixels are 1/16 block. Lower the glass display by 3.5 pixels while
   // keeping the final ejection position in the lower block unchanged.
-  var DISPLAY_Y = 1.40 - 1.5 / 16
+  var DISPLAY_Y = 1.40 - 3.5 / 16
   var EJECT_Y = 0.30
   var Registries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
   var Location = Java.loadClass('net.minecraft.resources.ResourceLocation')
