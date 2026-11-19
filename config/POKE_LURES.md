@@ -14,6 +14,13 @@ is required. It spawns one wild Pokémon where it hits a block or entity, moving
 slightly from the exact hit point only if needed to fit the Pokémon. Lure impacts
 deal no snowball damage. A ten-tick cooldown prevents overlapping throws.
 
+On a valid impact, the original evolution sparkle effects and three opening
+sounds play at the exact hit coordinates before the Pokémon is added to the
+world. Bedrock effects use Cobblemon's positional packets for nearby viewers in
+the same dimension. They require no player command permissions and remain at
+the impact point if the Pokémon needs a nearby clear space. Each effect is
+guarded independently so a feedback failure cannot cancel the spawn.
+
 The roll and full item settings are saved on the projectile at throw time, so
 changing hands, editing the remaining stack, or reloading scripts while it is
 in flight cannot change its prize. Each projectile settles only once. Battles,

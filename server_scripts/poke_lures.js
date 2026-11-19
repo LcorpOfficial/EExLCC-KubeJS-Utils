@@ -20,6 +20,8 @@
   var UUID = Java.loadClass('java.util.UUID')
   var Sounds = Java.loadClass('net.minecraft.sounds.SoundEvents')
   var SoundSource = Java.loadClass('net.minecraft.sounds.SoundSource')
+  var Registries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
+  var ParticlePacket = Java.loadClass('com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticlePacket')
   var PROJECTILE_KEY = 'lccPokeLureProjectile'
   global.lccPokeLures.configure = null
   global.lccPokeLures.roll = null
@@ -295,14 +297,34 @@
     }
     fail('There is not enough room at the impact for this Pokémon')
   }
-  function effects(projectile, level, anchor) {
-    // Fixed strings only; no item/pool text is executed as commands.
-    projectile.setPositionAndRotation(Number(anchor.x), Number(anchor.y), Number(anchor.z), 0, 0)
-    projectile.runCommandSilent('bedrockparticle cobblemon:evo_bigsparkle @s')
-    projectile.runCommandSilent('bedrockparticle cobblemon:evo_flyingsparkles @s')
-    projectile.playSound('cobblemon:poke_ball.break', 1, 0.6)
-    projectile.playSound('cobblemon:block.campfire_pot.open', 1, 2)
-    projectile.playSound('cobblemon:block.fossil_machine.finished', 1, 2)
+  function feedback(label, action) {
+    try { action() }
+    catch (error) { console.error('[poke_lures] ' + label + ' failed: ' + String(error)) }
+  }
+  function effects(level, anchor) {
+    var x = Number(anchor.x), y = Number(anchor.y), z = Number(anchor.z)
+    // Use the same positional packet as /bedrockparticle, without running a
+    // permission-gated command as a projectile. It survives projectile removal.
+    ;['cobblemon:evo_bigsparkle', 'cobblemon:evo_flyingsparkles'].forEach(function (id) {
+      feedback('Impact particle ' + id, function () {
+        var packet = new ParticlePacket(Location.parse(id), anchor)
+        var viewers = level.getServer().getPlayerList().getPlayers().iterator()
+        while (viewers.hasNext()) {
+          var viewer = viewers.next()
+          if (viewer.level !== level) continue
+          var dx = Number(viewer.getX()) - x, dy = Number(viewer.getY()) - y, dz = Number(viewer.getZ()) - z
+          if (dx * dx + dy * dy + dz * dz <= 64 * 64) {
+            feedback('Impact particle delivery', function () { packet.sendToPlayer(viewer) })
+          }
+        }
+      })
+    })
+    ;[['cobblemon:poke_ball.break', 0.6], ['cobblemon:block.campfire_pot.open', 2],
+      ['cobblemon:block.fossil_machine.finished', 2]].forEach(function (sound) {
+      feedback('Impact sound ' + sound[0], function () {
+        level.playSound(null, x, y, z, Registries.SOUND_EVENT.get(Location.parse(sound[0])), SoundSource.NEUTRAL, 1, sound[1])
+      })
+    })
   }
   function throwLure(stack, level, player) {
     var id = String(player.getGameProfile().getId())
@@ -386,15 +408,16 @@
         pokemon.exchangeMark(grant.mark, true)
         if (grant.active) pokemon.setActiveMark(grant.mark)
       })
+      // Send the opening effects at the actual collision point before the
+      // spawn packet, even when the Pokemon needs a nearby clear position.
+      effects(level, anchor)
       if (!level.addFreshEntity(entity)) fail('The Pokémon spawn was cancelled')
       committed = true
       // Award only after the Pokemon was actually added to the world. Neither
       // obtaining a ticket, throwing, nor a failed impact can earn it.
-      try {
+      feedback('Spawn advancement', function () {
         if (player != null) player.unlockAdvancement(Location.parse('lcc:lets_go_gambling'))
-        effects(projectile, level, anchor)
-      }
-      catch (effectError) { console.error('[poke_lures] Spawn succeeded; feedback failed: ' + String(effectError)) }
+      })
     } catch (error) {
       console.error('[poke_lures] ' + String(error))
       if (!committed && !snapshot.isEmpty()) {

@@ -16,6 +16,7 @@
   var EntityType = Java.loadClass('net.minecraft.world.entity.EntityType')
   var Stack = Java.loadClass('net.minecraft.world.item.ItemStack')
   var Axis = Java.loadClass('com.mojang.math.Axis')
+  var Mth = Java.loadClass('net.minecraft.util.Mth')
   var WeakHashMap = Java.loadClass('java.util.WeakHashMap')
   var cache = new WeakHashMap()
 
@@ -91,7 +92,12 @@
         fake.setItem(shown.stack.copyWithCount(1))
         pose.pushPose()
         try {
-          pose.translate(0.5, shown.y, 0.5)
+          // Vanilla adds sin(age / 10 + bobOffs) * 0.1 + 0.1 to item Y.
+          // bobOffs is random even on an entity that never ticks. Cancel its
+          // varying part, preserving the fixed lift used to center the model.
+          // Use vanilla's sine lookup so the correction matches its renderer.
+          var bob = Number(Mth.sin(Number(fake.getAge()) / 10 + Number(fake.bobOffs))) * 0.1
+          pose.translate(0.5, shown.y - bob, 0.5)
           pose.mulPose(Axis.YP.rotationDegrees(((Number(be.getLevel().getTime()) + Number(partial)) * 3) % 360))
           // Draw only the item renderer, without world shadows/debug hitboxes
           // that assume the entity has actually been spawned at a world pos.
