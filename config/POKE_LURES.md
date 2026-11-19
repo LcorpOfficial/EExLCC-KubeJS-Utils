@@ -33,8 +33,16 @@ on defaults or an item in `poke_lures.json`, or on a held stack:
 
 Tiers and entries can override it too, in the same order as `min_perfect_ivs`.
 The ball choice is saved at throw time and only changes the visual effect.
-The native one-shot send-out spark and sparkle emitters are used, so the burst
-ends by itself. Existing in-flight lures without the setting use Ancient Origin.
+The existing native send-out spark, sparkle, and central flash effects are
+called directly, for example `cobblemon:duskball/casual/sendflash`. Cobblemon
+stops that flash after its active time because its omitted `sleep_time`
+defaults to zero. No copied particle resources are needed. Existing in-flight
+lures without the setting use Ancient Origin. Distribution uses the existing
+KubeJS sync setup; instance files do not need to be copied manually.
+
+`cobblemon:poke_ball.break` is played as a direct sound event because it is a
+client sound asset without a registered server sound event. This preserves the
+same ID, Ambient channel, volume 1, and pitch 0.6 as the original reward.
 
 The roll and full item settings are saved on the projectile at throw time, so
 changing hands, editing the remaining stack, or reloading scripts while it is

@@ -20,7 +20,7 @@
   var UUID = Java.loadClass('java.util.UUID')
   var Sounds = Java.loadClass('net.minecraft.sounds.SoundEvents')
   var SoundSource = Java.loadClass('net.minecraft.sounds.SoundSource')
-  var Registries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
+  var SoundEvent = Java.loadClass('net.minecraft.sounds.SoundEvent')
   var ParticlePacket = Java.loadClass('com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticlePacket')
   var PokeBalls = Java.loadClass('com.cobblemon.mod.common.api.pokeball.PokeBalls')
   var PROJECTILE_KEY = 'lccPokeLureProjectile'
@@ -318,10 +318,12 @@
     // Match native send-out naming: underscores removed from the ball's path.
     var ballPath = (sendOutBall || 'cobblemon:ancient_origin_ball').split(':')[1].replace(/_/g, '')
     var particles = ['cobblemon:evo_bigsparkle', 'cobblemon:evo_flyingsparkles',
-      'cobblemon:' + ballPath + '/casual/ballsparks', 'cobblemon:' + ballPath + '/casual/ballsendsparkle']
+      'cobblemon:' + ballPath + '/casual/ballsparks', 'cobblemon:' + ballPath + '/casual/ballsendsparkle',
+      'cobblemon:' + ballPath + '/casual/sendflash']
     // Use the same positional packet as /bedrockparticle, without running a
     // permission-gated command as a projectile. It survives projectile removal.
-    // These send-out emitters are one-shot; the native sendflash emitter loops.
+    // Native sendflash omits sleep_time: Cobblemon defaults it to zero and
+    // stops the emitter after active_time, despite its "looping" JSON type.
     particles.forEach(function (id) {
       feedback('Impact particle ' + id, function () {
         var packet = new ParticlePacket(Location.parse(id), anchor)
@@ -339,7 +341,9 @@
     ;[['cobblemon:poke_ball.break', 0.6], ['cobblemon:block.campfire_pot.open', 2],
       ['cobblemon:block.fossil_machine.finished', 2]].forEach(function (sound) {
       feedback('Impact sound ' + sound[0], function () {
-        level.playSound(null, x, y, z, Registries.SOUND_EVENT.get(Location.parse(sound[0])), SoundSource.AMBIENT, 1, sound[1])
+        // poke_ball.break is a client sound asset, not a registered server
+        // SoundEvent. Create a direct event, as /playsound does, to retain it.
+        level.playSound(null, x, y, z, SoundEvent.createVariableRangeEvent(Location.parse(sound[0])), SoundSource.AMBIENT, 1, sound[1])
       })
     })
   }
