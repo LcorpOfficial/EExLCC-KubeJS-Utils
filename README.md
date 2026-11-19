@@ -54,6 +54,43 @@ used during battle.
 | `kubejs:sticker_alpha` | Makes the Pokémon Alpha and grants and activates its Alpha Mark. Toggle glowing eyes through the mark menu. |
 | `kubejs:sticker_shiny` | Makes the Pokémon Shiny. |
 
+## Poké Lures
+
+Throw a Poké Lure to spawn a wild Pokémon where it hits. Native variants are
+`kubejs:poke_lure`, `kubejs:spooky_poke_lure`, and `kubejs:festive_poke_lure`.
+The base lure has 5% Alpha, 1% Shiny, and natural IVs. Seasonal lures always have
+at least three perfect IVs. The optional `min_perfect_ivs` setting controls this
+minimum and is disabled by default. All retain 50% Hidden Ability by default.
+Levels use 80% of the highest party level, rounded down with a minimum baseline
+of 25, then vary by -4 to +4 (minimum final level 21). Failed impacts return the
+lure. Existing lure stacks convert automatically.
+
+Daily rewards give one Lure Ticket. Successfully spawning a Pokémon with a
+lure awards the Let's Go Gambling advancement.
+
+Operators can use `/pokelure give <variant> [player] [count]` or customize the
+held stack with `/pokelure configure <JSON>`. Pools and odds are configured in
+[poke_lures.json](config/poke_lures.json); names, textures, and tooltips are in
+[the startup catalog](startup_scripts/poke_lures.js). Restart for installation.
+See [lure configuration and migration](config/POKE_LURES.md) for pool schemas,
+marks, per-stack settings, and replacing the old daily reward helper.
+
+## Redeem Items
+
+These items use the supplied sprites and two-line Gift-o-Tron tooltips.
+Configure their costs and rewards on the machine.
+
+| Item | Rarity |
+| --- | --- |
+| `kubejs:lure_ticket` | Epic |
+| `kubejs:spooky_ticket` | Epic |
+| `kubejs:festive_ticket` | Epic |
+| `kubejs:tricked_treat` | Rare |
+| `kubejs:holiday_cheer` | Rare |
+
+All three Poké Lures are also epic rarity. Restart server and clients after
+installing new item registrations and assets.
+
 ## Music Discs
 
 Elevator by Benjamin Tissot (`kubejs:music_disc_elevator`) plays in a jukebox

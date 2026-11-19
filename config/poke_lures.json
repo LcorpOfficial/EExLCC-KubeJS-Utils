@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "defaults": {
+    "level": { "partyScale": 0.8, "minimum": 25, "variation": 4 },
+    "properties": "",
+    "min_perfect_ivs": null,
+    "modifiers": [
+      { "id": "alpha", "chance": 0.15, "properties": "alpha=true", "otherwise": "alpha=false" },
+      { "id": "shiny", "chance": 0.15, "properties": "shiny=true", "otherwise": "shiny=false" },
+      { "id": "hidden_ability", "chance": 0.5, "properties": "ha=true", "otherwise": "ha=false" }
+    ]
+  },
+  "items": [
+    {
+      "id": "kubejs:poke_lure",
+      "pool": "random",
+      "modifiers": [
+        { "id": "alpha", "chance": 0.05, "properties": "alpha=true", "otherwise": "alpha=false" },
+        { "id": "shiny", "chance": 0.01, "properties": "shiny=true", "otherwise": "shiny=false" }
+      ]
+    },
+    {
+      "id": "kubejs:spooky_poke_lure",
+      "pool": "spooky",
+      "min_perfect_ivs": 3,
+      "modifiers": [
+        { "id": "alpha", "chance": 0.15, "properties": "alpha=true", "otherwise": "alpha=false" },
+        { "id": "shiny", "chance": 0.05, "properties": "shiny=true", "otherwise": "shiny=false" }
+      ]
+    },
+    {
+      "id": "kubejs:festive_poke_lure",
+      "pool": "festive",
+      "min_perfect_ivs": 3,
+      "modifiers": [
+        { "id": "alpha", "chance": 0.15, "properties": "alpha=true", "otherwise": "alpha=false" },
+        { "id": "shiny", "chance": 0.05, "properties": "shiny=true", "otherwise": "shiny=false" }
+      ]
+    }
+  ],
+  "pools": {
+    "random": [],
+    "spooky": {
+      "tiers": [
+        { "name": "standard", "weight": 85, "entries": ["spinarak", "quantom", "mimikyu", "pumpkaboo", "phantump pale", "bowne", "seibat", "umbreon", "hollorn", "spiritomb", "typecast typecast_form=dark", "tormniac", "zorua hisuian", "bruital", "gimmighoul"] },
+        { "name": "starter", "weight": 8, "entries": ["fennekin"] },
+        { "name": "legendary", "weight": 1, "entries": ["darkrai", "giratina", "spectrier"] },
+        { "name": "poster", "weight": 5, "entries": ["gourgrenade"] }
+      ]
+    },
+    "festive": {
+      "tiers": [
+        { "name": "standard", "weight": 85, "entries": ["delibird", "duskarou", "snowbrawl", "snowygast", "tropius sanrosan", "piochio", "snorunt", "glaceon", "amaura", "cryogonal", "typecast typecast_form=ice", "norstar", "vulpix alolan", "sneasel hisuian", "gimmibread"] },
+        { "name": "starter", "weight": 8, "entries": ["piplup"] },
+        { "name": "legendary", "weight": 1, "entries": ["minursa", "kyurem", "glastrier"] },
+        { "name": "poster", "weight": 5, "entries": ["lilligant winter"] }
+      ]
+    }
+  },
+  "legacy": { "enabled": true, "item": "cobblemon:npc_editor", "customModelData": 69420, "replacement": "kubejs:poke_lure" },
+  "dailyReward": {
+    "mode": "auto",
+    "timezone": "America/Indiana/Indianapolis",
+    "times": ["12:00"],
+    "item": "kubejs:lure_ticket",
+    "count": 1,
+    "message": "Welcome back! It's time for Gacha!"
+  }
+}
